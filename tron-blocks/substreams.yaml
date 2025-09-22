@@ -1,0 +1,33 @@
+specVersion: v0.1.0
+package:
+  name: tron_blocks
+  version: v0.1.0
+  url: https://github.com/pinax-network/substreams-tron
+  doc: |
+    Basic Tron block extraction example scaffold
+
+protobuf:
+  files:
+    - v1/tron.proto
+  importPaths:
+    - ./proto
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/tron_blocks.wasm
+
+modules:
+  - name: map_blocks
+    kind: map
+    initialBlock: 66000000
+    inputs: []
+    output:
+      type: proto:sf.tron.types.v1.Block
+
+  - name: map_transaction_count  
+    kind: map
+    initialBlock: 66000000
+    inputs: []
+    output:
+      type: proto:sf.tron.types.v1.TransactionCount
