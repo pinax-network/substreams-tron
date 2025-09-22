@@ -1,0 +1,28 @@
+[workspace]
+members = [
+  # Proto definitions
+  "proto",
+  
+  # Common utilities
+  "common",
+  
+  # Basic example
+  "tron-blocks",
+]
+resolver = "2"
+
+[workspace.package]
+description = "Substreams for Tron blockchain"
+edition = "2021"
+version = "0.0.0"
+license = "Apache-2.0"
+
+[workspace.dependencies]
+substreams = "0.6.1"
+substreams-database-change = "2.1.2"
+prost = "0.13"
+prost-types = "0.13"
+hex = "0.4"
+
+[profile.release]
+lto = true
