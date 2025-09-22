@@ -1,0 +1,18 @@
+specVersion: v0.1.0
+package:
+  name: "substreams_tron"
+  version: v0.1.0
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: target/wasm32-unknown-unknown/release/substreams_tron.wasm
+
+modules:
+  - name: map_blocks
+    kind: map
+    inputs:
+      - source: sf.substreams.v1.Block
+    output:
+      type: proto:google.protobuf.Any
+
