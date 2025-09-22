@@ -1,0 +1,10 @@
+[package]
+name = "substreams-tron"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+substreams = "0.6.2"
+
+[lib]
+crate-type = ["cdylib"]

@@ -1,0 +1,25 @@
+specVersion: v0.1.0
+package:
+  name: substreams_tron
+  version: v0.1.0
+
+protobuf:
+  files:
+    - tron.proto
+  importPaths:
+    - ./proto
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ./target/wasm32-unknown-unknown/release/substreams_tron.wasm
+
+modules:
+  - name: map_blocks
+    kind: map
+    inputs:
+      - source: sf.substreams.v1.Clock
+    output:
+      type: proto:example.v1.Output
+
+network: tron
