@@ -1,0 +1,18 @@
+[package]
+name = "substreams-tron"
+version = "0.1.0"
+edition = "2021"
+authors = ["Pinax <https://pinax.network>"]
+description = "Substreams scaffold for the Tron blockchain"
+license = "Apache-2.0"
+repository = "https://github.com/pinax-network/substreams-tron"
+keywords = ["substreams", "tron", "blockchain"]
+readme = "../../README.md"
+
+[dependencies]
+prost = "0.12"
+prost-types = "0.12"
+substreams = "0.5"
+
+[build-dependencies]
+prost-build = "0.12"
