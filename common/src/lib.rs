@@ -1,4 +1,4 @@
-use substreams_tron_proto::{Block, BlockHeader, Transaction, ResponseCode};
+use substreams_tron_proto::{Block, BlockHeader, ResponseCode, Transaction};
 
 /// Basic Tron block representation for internal use
 #[derive(Debug, Clone)]
@@ -110,21 +110,19 @@ pub fn create_sample_block() -> TronBlock {
             timestamp: 1640995200000, // Example timestamp
             witness_signature: vec![0x11, 0x12, 0x13, 0x14],
         },
-        transactions: vec![
-            TronTransaction {
-                id: vec![0x15, 0x16, 0x17, 0x18],
-                signature: vec![vec![0x19, 0x1a, 0x1b, 0x1c]],
-                ref_block_bytes: vec![0x1d, 0x1e],
-                ref_block_hash: vec![0x1f, 0x20, 0x21, 0x22],
-                expiration: 1640995260000,
-                timestamp: 1640995200000,
-                contract_result: vec![],
-                result: true,
-                code: ResponseCode::Success as i32,
-                ret_message: vec![],
-                energy_used: 21000,
-                energy_penalty: 0,
-            }
-        ],
+        transactions: vec![TronTransaction {
+            id: vec![0x15, 0x16, 0x17, 0x18],
+            signature: vec![vec![0x19, 0x1a, 0x1b, 0x1c]],
+            ref_block_bytes: vec![0x1d, 0x1e],
+            ref_block_hash: vec![0x1f, 0x20, 0x21, 0x22],
+            expiration: 1640995260000,
+            timestamp: 1640995200000,
+            contract_result: vec![],
+            result: true,
+            code: ResponseCode::Success as i32,
+            ret_message: vec![],
+            energy_used: 21000,
+            energy_penalty: 0,
+        }],
     }
 }

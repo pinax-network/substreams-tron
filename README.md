@@ -9,24 +9,39 @@ This repository provides a scaffold for building Substreams on Tron, similar to 
 ### Prerequisites
 
 - [Rust](https://www.rust-lang.org/tools/install) (1.85+)
-- [Substreams CLI](https://substreams.streamingfast.io/getting-started/installing-the-cli)
+- [Substreams CLI](https://substreams.streamingfast.io/getting-started/installing-the-cli) (optional, for packaging and running)
+- [Protocol Buffers compiler](https://grpc.io/docs/protoc-installation/)
 
 ### Building
 
 ```bash
-# Build all packages
-cargo build --release --target wasm32-unknown-unknown
+# Check all packages compile
+make check
 
-# Or build a specific package
-cd tron-blocks
-cargo build --release --target wasm32-unknown-unknown
+# Build all packages
+make build
+
+# Build specific package  
+make build-tron-blocks
+
+# Format code
+make fmt
 ```
 
-### Running
+### Example Usage
 
 ```bash
 cd tron-blocks
-substreams run substreams.yaml map_blocks -e tron.streamingfast.io:443 -s 66000000 -t +10
+
+# Build the WASM binary
+cargo build --release --target wasm32-unknown-unknown
+
+# Package the substream (requires substreams CLI)
+substreams pack substreams.yaml
+
+# The example creates sample blocks for demonstration
+# To run against real Tron data, you would need:
+# substreams run substreams.yaml map_blocks -e <tron-endpoint> -s 66000000 -t +10
 ```
 
 ## Structure
@@ -34,6 +49,7 @@ substreams run substreams.yaml map_blocks -e tron.streamingfast.io:443 -s 660000
 - **`proto/`** - Protocol buffer definitions for Tron block types
 - **`common/`** - Shared utilities and helper functions  
 - **`tron-blocks/`** - Basic example showing how to extract block data
+- **`docs/`** - Additional documentation and examples
 
 ## Tron Block Types
 
@@ -42,6 +58,7 @@ This repository includes simplified protobuf definitions based on [firehose-tron
 - `Block` - Complete block data including header and transactions
 - `BlockHeader` - Block metadata (number, timestamp, witness, etc.)
 - `Transaction` - Transaction data including signatures, contracts, and execution results
+- `TransactionCount` - Simple wrapper for counting transactions
 
 ## Supported by Sinks
 
@@ -54,6 +71,10 @@ The `tron-blocks` package demonstrates:
 
 - **`map_blocks`** - Extract complete block data with converted proto format
 - **`map_transaction_count`** - Count transactions per block
+
+## Extending
+
+See [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for detailed instructions on creating new substreams.
 
 ## Contributing
 
