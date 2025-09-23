@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package tron.trc20.token.v1;
+
+message Events {
+  repeated Transaction transactions = 1;
+}
+
+message Transaction {
+    bytes hash = 1;
+    bytes to = 2;
+    uint64 nonce = 3;
+    string gas_price = 4;
+    uint64 gas_limit = 5;
+    uint64 gas_used = 6;
+    string value = 7;
+    repeated Log logs = 8;
+}
+
+message Log {
+  bytes address = 1;
+  uint64 ordinal = 2;
+  oneof log {
+    Transfer transfer = 10;
+  }
+}
+
+message Transfer {
+  bytes from = 1;
+  bytes to = 2;
+  string amount = 3; // uint256
+}

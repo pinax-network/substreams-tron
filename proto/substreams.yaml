@@ -1,0 +1,13 @@
+specVersion: v0.1.0
+package:
+  name: proto
+  version: v0.0.0
+
+protobuf:
+  files:
+    - v1/trc20.proto
+
+  excludePaths:
+    - sf/substreams
+    - sf/tron
+    - google
