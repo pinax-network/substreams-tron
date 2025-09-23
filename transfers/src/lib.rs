@@ -1,5 +1,4 @@
-use common::logs_with_caller;
-use proto::pb::tron::trc20::v1 as pb;
+use proto::pb::tron::transfers::v1 as pb;
 use substreams_abis::evm::token::erc20::events;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::{Event};
@@ -15,6 +14,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
         let value = trx.clone().value.unwrap_or_default().with_decimal(0);
         let mut transaction = pb::Transaction {
                 // -- transaction --
+                from: trx.from.to_vec(),
                 to: trx.to.to_vec(),
                 hash: trx.hash.to_vec(),
                 nonce: trx.nonce as u64,

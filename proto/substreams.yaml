@@ -5,7 +5,7 @@ package:
 
 protobuf:
   files:
-    - v1/trc20.proto
+    - v1/transfers.proto
 
   excludePaths:
     - sf/substreams

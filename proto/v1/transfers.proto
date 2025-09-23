@@ -8,13 +8,14 @@ message Events {
 
 message Transaction {
     bytes hash = 1;
-    bytes to = 2;
-    uint64 nonce = 3;
-    string gas_price = 4;
-    uint64 gas_limit = 5;
-    uint64 gas_used = 6;
-    string value = 7;
-    repeated Log logs = 8;
+    bytes from = 2;
+    bytes to = 3;
+    uint64 nonce = 5;
+    string gas_price = 6; // uint256
+    uint64 gas_limit = 7;
+    uint64 gas_used = 8;
+    string value = 9; // uint256
+    repeated Log logs = 10;
 }
 
 message Log {
