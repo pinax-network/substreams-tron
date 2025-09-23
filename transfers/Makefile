@@ -1,5 +1,5 @@
 ENDPOINT ?= mainnet-evm.tron.streamingfast.io:443
-START_BLOCK ?= 75995123
+START_BLOCK ?= 75998281
 PARALLEL_JOBS ?= 500
 
 .PHONY: build

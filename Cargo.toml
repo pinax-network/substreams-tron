@@ -1,7 +1,7 @@
 [workspace]
 members = [
   # Tokens
-  "trc20",
+  "transfers",
 
   # Common
   "proto",

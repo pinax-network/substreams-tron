@@ -1,29 +1,29 @@
 specVersion: v0.1.0
 package:
-  name: tron_trc20_transfers
+  name: tron_transfers
   version: v0.1.0
   url: https://github.com/pinax-network/substreams-tron
-  description: TRC20
+  description: TRC20 & Native Transfers
   image: ../image.png
 
 binaries:
   default:
     type: wasm/rust-v1
-    file: ../target/wasm32-unknown-unknown/release/trc20.wasm
+    file: ../target/wasm32-unknown-unknown/release/transfers.wasm
 
 protobuf:
   files:
-    - v1/trc20.proto
+    - v1/transfers.proto
   importPaths:
     - ../proto
 
 modules:
   - name: map_events
     kind: map
-    doc: TRC20 transfers
+    doc: TRC20 & Native transfers
     inputs:
       - source: sf.ethereum.type.v2.Block
     output:
-      type: proto:tron.trc20.v1.Events
+      type: proto:tron.transfers.v1.Events
 
 network: mainnet

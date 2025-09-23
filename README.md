@@ -4,8 +4,8 @@ Substreams for tracking Token transfers/balances for both Native & TRC-20 on the
 
 ## Substreams packages
 
-- [ ] TRC-20
-  - [ ] Transfers
+- [x] TRC-20
+  - [x] Transfers
   - [ ] Balances
 - [ ] Native
   - [ ] Transfers

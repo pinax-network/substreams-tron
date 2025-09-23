@@ -1,6 +1,6 @@
 [package]
-name = "trc20"
-description = "TRC20"
+name = "transfers"
+description = "TRC20 & Native Transfers"
 edition = { workspace = true }
 version = { workspace = true }
 authors = ["Denis <denis@pinax.network>"]
