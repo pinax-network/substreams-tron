@@ -1,128 +1,152 @@
-use substreams_tron_proto::{Block, BlockHeader, ResponseCode, Transaction};
+use prost_types::Timestamp;
+use substreams::{hex, log, pb::substreams::Clock, scalar::BigInt, Hex};
+use substreams_ethereum::pb::eth::v2::{block::DetailLevel, Block, Log, TransactionTrace};
 
-/// Basic Tron block representation for internal use
-#[derive(Debug, Clone)]
-pub struct TronBlock {
-    pub id: Vec<u8>,
-    pub header: TronBlockHeader,
-    pub transactions: Vec<TronTransaction>,
+pub type Address = Vec<u8>;
+pub type Hash = Vec<u8>;
+pub const NULL_ADDRESS: [u8; 20] = hex!("0000000000000000000000000000000000000000");
+pub const NULL_HASH: [u8; 32] = hex!("0000000000000000000000000000000000000000000000000000000000000000");
+pub const NATIVE_ADDRESS: &str = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+
+pub fn update_genesis_clock(mut clock: Clock) -> Clock {
+    // only applies to the first block of the stream
+    if clock.number != 0 {
+        return clock;
+    }
+    // ETH Mainnet
+    if clock.id == "d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3" {
+        clock.timestamp = Some(Timestamp { seconds: 1438269973, nanos: 0 });
+        return clock;
+    // Arbitrum One
+    } else if clock.id == "7ee576b35482195fc49205cec9af72ce14f003b9ae69f6ba0faef4514be8b442" {
+        clock.timestamp = Some(Timestamp { seconds: 1622240000, nanos: 0 });
+        return clock;
+    // Arbitrum Nova
+    } else if clock.id == "2ad24e03026118f9b3a48626f0636e38c93660e90a6812e853a99aa8c5371561" {
+        clock.timestamp = Some(Timestamp { seconds: 1656120000, nanos: 0 });
+        return clock;
+    // Boba
+    } else if clock.id == "dcd9e6a8f9973eaa62da2874959cb152faeb4fd6929177bd6335a1a16074ef9c" {
+        clock.timestamp = Some(Timestamp {
+            seconds: 1635393439, // Block 1
+            nanos: 0,
+        });
+        return clock;
+    }
+    clock
 }
 
-/// Basic Tron block header representation
-#[derive(Debug, Clone)]
-pub struct TronBlockHeader {
-    pub number: u64,
-    pub tx_trie_root: Vec<u8>,
-    pub witness_address: Vec<u8>,
-    pub parent_number: u64,
-    pub parent_hash: Vec<u8>,
-    pub version: u32,
-    pub timestamp: i64,
-    pub witness_signature: Vec<u8>,
+// In ClickHouse, an aggregate function like argMax can only take one expression as the "ordering" argument.
+// So we typically combine (block_num, index) into a single monotonic integer.
+// For example, if each of block_num and index fits in 32 bits, we can do:
+// max(toUInt64(block_num) * 2^32 + index) AS version
+pub fn to_global_sequence(clock: &Clock, index: u64) -> u64 {
+    (clock.number << 32) + index
 }
 
-/// Basic Tron transaction representation
-#[derive(Debug, Clone)]
-pub struct TronTransaction {
-    pub id: Vec<u8>,
-    pub signature: Vec<Vec<u8>>,
-    pub ref_block_bytes: Vec<u8>,
-    pub ref_block_hash: Vec<u8>,
-    pub expiration: i64,
-    pub timestamp: i64,
-    pub contract_result: Vec<Vec<u8>>,
-    pub result: bool,
-    pub code: i32,
-    pub ret_message: Vec<u8>,
-    pub energy_used: i64,
-    pub energy_penalty: i64,
+pub fn bytes_to_hex(bytes: &[u8]) -> String {
+    format! {"0x{}", Hex::encode(bytes)}.to_string()
 }
 
-/// Converts a Tron block to our proto definition
-pub fn convert_block(block: &TronBlock) -> Block {
-    Block {
-        id: block.id.clone(),
-        header: Some(convert_block_header(&block.header)),
-        transactions: block.transactions.iter().map(convert_transaction).collect(),
+pub fn extend_from_address(address1: &Address, address2: &Address) -> Vec<u8> {
+    // Create key with pre-allocated capacity
+    let mut key = Vec::with_capacity(address1.len() + address2.len());
+    key.extend_from_slice(&address1);
+    key.extend_from_slice(&address2);
+    key
+}
+
+pub fn to_optional_vector(vec: &Vec<u8>) -> Option<Vec<u8>> {
+    if vec.len() > 0 {
+        if vec.len() == 32 && vec.to_vec() == NULL_HASH {
+            return None;
+        }
+        if vec.len() == 20 && vec.to_vec() == NULL_ADDRESS {
+            return None;
+        }
+        Some(vec.to_vec())
+    } else {
+        None
     }
 }
 
-/// Converts a Tron block header
-pub fn convert_block_header(header: &TronBlockHeader) -> BlockHeader {
-    BlockHeader {
-        number: header.number,
-        tx_trie_root: header.tx_trie_root.clone(),
-        witness_address: header.witness_address.clone(),
-        parent_number: header.parent_number,
-        parent_hash: header.parent_hash.clone(),
-        version: header.version,
-        timestamp: header.timestamp,
-        witness_signature: header.witness_signature.clone(),
+pub fn bytes32_to_string(bytes: &[u8]) -> String {
+    if bytes.is_empty() {
+        return "".to_string();
+    }
+    let s = String::from_utf8_lossy(&bytes);
+    s.trim().trim_matches('\0').to_string()
+}
+
+// Used to enforce ERC-20 decimals to be between 0 and 255
+pub fn bigint_to_uint8(bigint: &substreams::scalar::BigInt) -> Option<i32> {
+    if bigint.lt(&BigInt::zero()) {
+        log::info!("bigint_to_uint8: value is negative");
+        return None;
+    }
+    if bigint.gt(&BigInt::from(255)) {
+        log::info!("bigint_to_uint8: value is greater than 255");
+        return None;
+    }
+    Some(bigint.to_i32())
+}
+
+pub fn bigint_to_uint64(bigint: &substreams::scalar::BigInt) -> Option<u64> {
+    if bigint.lt(&BigInt::zero()) {
+        log::info!("bigint_to_uint64: value is negative");
+        return None;
+    }
+    if bigint.gt(&BigInt::from(u64::MAX)) {
+        log::info!("bigint_to_uint64: value is greater than u64::MAX");
+        return None;
+    }
+    Some(bigint.to_u64())
+}
+
+pub fn bigint_to_i32(bigint: &substreams::scalar::BigInt) -> Option<i32> {
+    if bigint.lt(&BigInt::zero()) {
+        log::info!("bigint_to_i32: value is negative");
+        return None;
+    }
+    if bigint.gt(&BigInt::from(i32::MAX)) {
+        log::info!("bigint_to_i32: value is greater than i32::MAX");
+        return None;
+    }
+    Some(bigint.to_i32())
+}
+
+// Convert a 32-byte hash to a 20-byte address
+// Edge case transaction: 0x083752500764e30f9f6b13c8a6d7d80214b907bd897937b35de78371ca85009e
+pub fn bytes_to_address(bytes: &[u8]) -> Vec<u8> {
+    let start = bytes.len().saturating_sub(20);
+    bytes[start..].to_vec()
+}
+
+// Timestamp to date conversion
+// ex: 2015-07-30T16:02:18Z => 2015-07-30
+pub fn clock_to_date(clock: &Clock) -> String {
+    match clock.timestamp.as_ref().expect("timestamp missing").to_string().split('T').next() {
+        Some(date) => date.to_string(),
+        _ => "".to_string(),
     }
 }
 
-/// Converts a Tron transaction
-pub fn convert_transaction(transaction: &TronTransaction) -> Transaction {
-    Transaction {
-        txid: transaction.id.clone(),
-        signature: transaction.signature.clone(),
-        ref_block_bytes: transaction.ref_block_bytes.clone(),
-        ref_block_hash: transaction.ref_block_hash.clone(),
-        expiration: transaction.expiration,
-        timestamp: transaction.timestamp,
-        contract_result: transaction.contract_result.clone(),
-        result: transaction.result,
-        code: transaction.code,
-        message: transaction.ret_message.clone(),
-        energy_used: transaction.energy_used,
-        energy_penalty: transaction.energy_penalty,
-        contracts: vec![], // Simplified for now - can be extended
-    }
+pub fn is_zero_address<T: AsRef<[u8]>>(addr: T) -> bool {
+    addr.as_ref() == NULL_ADDRESS
 }
 
-/// Helper function to format Tron addresses
-pub fn format_address(address: &[u8]) -> String {
-    if address.is_empty() {
-        return String::new();
-    }
-    hex::encode(address)
-}
+pub fn logs_with_caller<'a>(block: &'a Block, trx: &'a TransactionTrace) -> Vec<(&'a Log, Option<Address>)> {
+    let mut results = vec![];
 
-/// Helper function to format transaction hash
-pub fn format_tx_hash(hash: &[u8]) -> String {
-    if hash.is_empty() {
-        return String::new();
+    if block.detail_level() == DetailLevel::DetaillevelExtended {
+        for (log, call_view) in trx.logs_with_calls() {
+            results.push((log, Some(call_view.call.caller.to_vec())));
+        }
+    } else {
+        for log in trx.receipt().logs() {
+            results.push((log.log, None));
+        }
     }
-    hex::encode(hash)
-}
 
-/// Creates a sample Tron block for testing/demonstration
-pub fn create_sample_block() -> TronBlock {
-    TronBlock {
-        id: vec![0x01, 0x02, 0x03, 0x04],
-        header: TronBlockHeader {
-            number: 66000000,
-            tx_trie_root: vec![0x05, 0x06, 0x07, 0x08],
-            witness_address: vec![0x09, 0x0a, 0x0b, 0x0c],
-            parent_number: 65999999,
-            parent_hash: vec![0x0d, 0x0e, 0x0f, 0x10],
-            version: 1,
-            timestamp: 1640995200000, // Example timestamp
-            witness_signature: vec![0x11, 0x12, 0x13, 0x14],
-        },
-        transactions: vec![TronTransaction {
-            id: vec![0x15, 0x16, 0x17, 0x18],
-            signature: vec![vec![0x19, 0x1a, 0x1b, 0x1c]],
-            ref_block_bytes: vec![0x1d, 0x1e],
-            ref_block_hash: vec![0x1f, 0x20, 0x21, 0x22],
-            expiration: 1640995260000,
-            timestamp: 1640995200000,
-            contract_result: vec![],
-            result: true,
-            code: ResponseCode::Success as i32,
-            ret_message: vec![],
-            energy_used: 21000,
-            energy_penalty: 0,
-        }],
-    }
+    results
 }

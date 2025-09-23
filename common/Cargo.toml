@@ -1,15 +1,15 @@
 [package]
-name = "substreams-tron-common"
-description.workspace = true
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-
-[dependencies]
-substreams.workspace = true
-substreams-tron-proto = { path = "../proto" }
-prost.workspace = true
-hex.workspace = true
+name = "common"
+description = { workspace = true }
+edition = { workspace = true }
+version = { workspace = true }
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
+
+[dependencies]
+substreams = { workspace = true }
+substreams-ethereum = { workspace = true }
+substreams-database-change = "2.0"
+prost = { workspace = true }
+prost-types = { workspace = true }
