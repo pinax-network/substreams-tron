@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
 
     -- log --
     log_index                   UInt32, -- derived from Substreams
-    log_address                 String,
+    log_address                 LowCardinality(String),
     log_ordinal                 UInt32,
 
     -- indexes --
