@@ -2,28 +2,24 @@ syntax = "proto3";
 
 package tron.transfers.v1;
 
-message Events {
-  repeated Transaction transactions = 1;
-}
+message Events { repeated Transaction transactions = 1; }
 
 message Transaction {
-    bytes hash = 1;
-    bytes from = 2;
-    bytes to = 3;
-    uint64 nonce = 5;
-    string gas_price = 6; // uint256
-    uint64 gas_limit = 7;
-    uint64 gas_used = 8;
-    string value = 9; // uint256
-    repeated Log logs = 10;
+  bytes hash = 1;
+  bytes from = 2;
+  bytes to = 3;
+  uint64 nonce = 5;
+  string gas_price = 6; // uint256
+  uint64 gas_limit = 7;
+  uint64 gas_used = 8;
+  string value = 9; // uint256
+  repeated Log logs = 10;
 }
 
 message Log {
   bytes address = 1;
   uint64 ordinal = 2;
-  oneof log {
-    Transfer transfer = 10;
-  }
+  oneof log { Transfer transfer = 10; }
 }
 
 message Transfer {

@@ -1,7 +1,7 @@
 use proto::pb::tron::transfers::v1 as pb;
 use substreams_abis::evm::token::erc20::events;
 use substreams_ethereum::pb::eth::v2::Block;
-use substreams_ethereum::{Event};
+use substreams_ethereum::Event;
 
 #[substreams::handlers::map]
 fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
@@ -13,16 +13,16 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
         let gas_price = trx.clone().gas_price.unwrap_or_default().with_decimal(0).to_string();
         let value = trx.clone().value.unwrap_or_default().with_decimal(0);
         let mut transaction = pb::Transaction {
-                // -- transaction --
-                from: trx.from.to_vec(),
-                to: trx.to.to_vec(),
-                hash: trx.hash.to_vec(),
-                nonce: trx.nonce as u64,
-                gas_price: gas_price.to_string(),
-                gas_limit: trx.gas_limit as u64,
-                gas_used: trx.receipt().receipt.cumulative_gas_used,
-                value: value.to_string(),
-                logs: vec![],
+            // -- transaction --
+            from: trx.from.to_vec(),
+            to: trx.to.to_vec(),
+            hash: trx.hash.to_vec(),
+            nonce: trx.nonce as u64,
+            gas_price: gas_price.to_string(),
+            gas_limit: trx.gas_limit as u64,
+            gas_used: trx.receipt().receipt.cumulative_gas_used,
+            value: value.to_string(),
+            logs: vec![],
         };
         for log_view in trx.receipt().logs() {
             let log = log_view.log;
