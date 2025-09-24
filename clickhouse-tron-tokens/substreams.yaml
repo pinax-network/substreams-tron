@@ -1,0 +1,35 @@
+specVersion: v0.1.0
+package:
+  name: clickhouse_tron_tokens
+  version: v0.1.0
+  url: https://github.com/pinax-network/substreams-tron
+  description: ClickHouse ready Tron token transfers
+  image: ../image.png
+
+imports:
+  database_changes: https://github.com/streamingfast/substreams-sink-database-changes/releases/download/v2.0.0/substreams-database-change-v2.0.0.spkg
+  sql: https://github.com/streamingfast/substreams-sink-sql/releases/download/protodefs-v1.0.7/substreams-sink-sql-protodefs-v1.0.7.spkg
+  transfers: https://github.com/pinax-network/substreams-tron/releases/download/transfers-v0.1.0/transfers-v0.1.0.spkg
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/clickhouse_tron_tokens.wasm
+
+protobuf:
+  files:
+    - v1/transfers.proto
+  importPaths:
+    - ../proto
+
+modules:
+  - name: db_out
+    kind: map
+    doc: Database changes for TRC20 and native transfers
+    inputs:
+      - source: sf.substreams.v1.Clock
+      - map: transfers:map_events
+    output:
+      type: proto:sf.substreams.database.v1.DatabaseChanges
+
+network: mainnet

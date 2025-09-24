@@ -1,0 +1,14 @@
+[package]
+name = "clickhouse-tron-tokens"
+description = "ClickHouse SQL templates and Substreams database changes for Tron token transfers"
+edition = { workspace = true }
+version = { workspace = true }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+substreams = { workspace = true }
+substreams-database-change = { workspace = true }
+proto = { path = "../proto" }
+common = { path = "../common" }
