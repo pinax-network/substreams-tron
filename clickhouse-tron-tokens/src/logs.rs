@@ -1,3 +1,4 @@
+use common::tron_base58_from_bytes;
 use proto::pb::tron::transfers::v1 as pb;
 use substreams::pb::substreams::Clock;
 use substreams_database_change::tables::Tables;
@@ -17,8 +18,8 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &pb::Events) {
                 set_template_tx(tx, tx_index, row);
 
                 // Transfer
-                row.set("from", hex::encode(&transfer.from));
-                row.set("to", hex::encode(&transfer.to));
+                row.set("from", tron_base58_from_bytes(&transfer.from).unwrap());
+                row.set("to", tron_base58_from_bytes(&transfer.to).unwrap());
                 row.set("amount", &transfer.amount);
             }
         }
@@ -38,6 +39,6 @@ pub fn log_key(clock: &Clock, tx_index: usize, log_index: usize) -> [(&'static s
 
 fn set_template_log(log: &pb::Log, log_index: usize, row: &mut substreams_database_change::tables::Row) {
     row.set("log_index", log_index as u32);
-    row.set("log_address", hex::encode(&log.address));
+    row.set("log_address", tron_base58_from_bytes(&log.address).unwrap());
     row.set("log_ordinal", log.ordinal);
 }

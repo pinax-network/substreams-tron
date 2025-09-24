@@ -1,4 +1,5 @@
 use proto::pb::tron::transfers::v1 as pb;
+use substreams::Hex;
 use substreams_abis::evm::token::erc20::events;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
@@ -28,6 +29,9 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             let log = log_view.log;
             // TRC-20 Transfer event
             if let Some(event) = events::Transfer::match_and_decode(log) {
+                substreams::log::info!("tx {}", Hex::encode(&trx.hash));
+                substreams::log::info!("from {}", Hex::encode(&event.from));
+                substreams::log::info!("to {}\n", Hex::encode(&event.to));
                 total_trc20_transfers += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
