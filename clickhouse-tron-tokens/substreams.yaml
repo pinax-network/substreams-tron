@@ -3,7 +3,8 @@ package:
   name: clickhouse_tron_tokens
   version: v0.1.0
   url: https://github.com/pinax-network/substreams-tron
-  doc: Clickhouse TRON tokens substreams
+  description: TRC-20 & Native transfers and balances for TRON blockchains.
+  image: ../image.png
 
 imports:
   transfers: ../transfers/substreams.yaml
@@ -18,5 +19,4 @@ modules:
     output:
       type: proto:substreams.database.v1.DatabaseChanges
 
-networks:
-  tron: mainnet-evm.tron.streamingfast.io:443
+network: tron
