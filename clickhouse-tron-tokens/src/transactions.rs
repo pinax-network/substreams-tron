@@ -35,6 +35,7 @@ pub fn tx_key(clock: &Clock, tx_index: usize) -> [(&'static str, String); 4] {
 
 pub fn set_template_tx(tx: &pb::Transaction, tx_index: usize, row: &mut substreams_database_change::tables::Row) {
     row.set("tx_index", tx_index as u32);
+    row.set("tx_hash", hex::encode(&tx.hash));
     row.set("tx_from", hex::encode(&tx.from));
     row.set("tx_to", hex::encode(&tx.to));
     row.set("tx_nonce", tx.nonce);

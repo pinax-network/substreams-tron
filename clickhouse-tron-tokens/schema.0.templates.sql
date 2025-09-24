@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     timestamp                   DateTime(0, 'UTC'),
 
     -- transaction --
+    tx_index                    UInt32, -- derived from Substreams
     tx_hash                     String,
     tx_from                     String,
     tx_to                       String,
@@ -14,11 +15,8 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     tx_gas_used                 UInt64,
     tx_value                    UInt256,
 
-    -- ordering (derived from Substreams) --
-    tx_index                    UInt32,
-    log_index                   UInt32,
-
     -- log --
+    log_index                   UInt32, -- derived from Substreams
     log_address                 String,
     log_ordinal                 UInt32,
 
@@ -57,8 +55,8 @@ ORDER BY (
 );
 ALTER TABLE TEMPLATE_TRANSACTION
     DROP INDEX IF EXISTS idx_log_index,
-    DROP INDEX IF EXISTS idx_address,
-    DROP INDEX IF EXISTS idx_ordinal;
+    DROP INDEX IF EXISTS idx_log_address,
+    DROP INDEX IF EXISTS idx_log_ordinal,
     DROP COLUMN IF EXISTS log_index,
-    DROP COLUMN IF EXISTS address,
-    DROP COLUMN IF EXISTS ordinal;
+    DROP COLUMN IF EXISTS log_address,
+    DROP COLUMN IF EXISTS log_ordinal;
