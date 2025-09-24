@@ -7,16 +7,34 @@ package:
   image: ../image.png
 
 imports:
+  # SQL Sink Substreams
+  database_changes: https://github.com/streamingfast/substreams-sink-database-changes/releases/download/v2.0.0/substreams-database-change-v2.0.0.spkg
+  sql: https://github.com/streamingfast/substreams-sink-sql/releases/download/protodefs-v1.0.7/substreams-sink-sql-protodefs-v1.0.7.spkg
+
+  # Transfers Substreams
   transfers: ../transfers/substreams.yaml
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/clickhouse_tron_tokens.wasm
 
 modules:
   - name: db_out
     kind: map
-    initialBlock: 75998281
     inputs:
       - source: sf.substreams.v1.Clock
       - map: transfers:map_events
     output:
-      type: proto:substreams.database.v1.DatabaseChanges
+      type: proto:sf.substreams.sink.database.v1.DatabaseChanges
+
+sink:
+  module: db_out
+  type: sf.substreams.sink.sql.v1.Service
+  config:
+    schema: "./schema.sql"
+    engine: clickhouse
+    postgraphile_frontend:
+      enabled: false
 
 network: tron

@@ -1,5 +1,5 @@
 ENDPOINT ?= mainnet-evm.tron.streamingfast.io:443
-START_BLOCK ?= 75998281
+START_BLOCK ?= 70000000
 PARALLEL_JOBS ?= 500
 
 .PHONY: build
@@ -16,7 +16,7 @@ noop: build
 
 .PHONY: gui
 gui: build
-	substreams gui -e $(ENDPOINT) substreams.yaml map_events -s $(START_BLOCK)
+	substreams gui -e $(ENDPOINT) substreams.yaml map_events -s $(START_BLOCK) --limit-processed-blocks 0
 
 .PHONY: prod
 prod: build
