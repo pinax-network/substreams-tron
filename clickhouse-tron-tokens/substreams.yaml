@@ -1,0 +1,22 @@
+specVersion: v0.1.0
+package:
+  name: clickhouse_tron_tokens
+  version: v0.1.0
+  url: https://github.com/pinax-network/substreams-tron
+  doc: Clickhouse TRON tokens substreams
+
+imports:
+  transfers: ../transfers/substreams.yaml
+
+modules:
+  - name: db_out
+    kind: map
+    initialBlock: 75998281
+    inputs:
+      - source: sf.substreams.v1.Clock
+      - map: transfers:map_events
+    output:
+      type: proto:substreams.database.v1.DatabaseChanges
+
+networks:
+  tron: mainnet-evm.tron.streamingfast.io:443
