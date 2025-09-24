@@ -2,6 +2,7 @@
 members = [
   # Tokens
   "transfers",
+  "clickhouse-tron-tokens",
 
   # Common
   "proto",
