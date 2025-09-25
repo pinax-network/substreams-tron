@@ -64,6 +64,6 @@ fn test_encode_from_hex_solscan() {
     );
     assert_eq!(
         tron_base58_from_hex("72c28b75b5e60469ac187174a296683680ae8a58").unwrap(),
-        "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        "TLS168n4rPdVbZQDoDCjj57axRZTyZ9vJh"
     );
 }

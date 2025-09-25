@@ -13,8 +13,8 @@ pub struct Transaction {
     pub hash: ::prost::alloc::vec::Vec<u8>,
     #[prost(bytes="vec", tag="2")]
     pub from: ::prost::alloc::vec::Vec<u8>,
-    #[prost(bytes="vec", tag="3")]
-    pub to: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="vec", optional, tag="3")]
+    pub to: ::core::option::Option<::prost::alloc::vec::Vec<u8>>,
     #[prost(uint64, tag="5")]
     pub nonce: u64,
     /// uint256

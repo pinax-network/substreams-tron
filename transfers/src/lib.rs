@@ -1,5 +1,4 @@
 use proto::pb::tron::transfers::v1 as pb;
-use substreams::Hex;
 use substreams_abis::evm::token::erc20::events;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
@@ -13,10 +12,11 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
     for trx in block.transactions() {
         let gas_price = trx.clone().gas_price.unwrap_or_default().with_decimal(0).to_string();
         let value = trx.clone().value.unwrap_or_default().with_decimal(0);
+        let to = if trx.to.is_empty() { None } else { Some(trx.to.to_vec()) };
         let mut transaction = pb::Transaction {
             // -- transaction --
             from: trx.from.to_vec(),
-            to: trx.to.to_vec(),
+            to,
             hash: trx.hash.to_vec(),
             nonce: trx.nonce as u64,
             gas_price: gas_price.to_string(),
@@ -29,9 +29,6 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             let log = log_view.log;
             // TRC-20 Transfer event
             if let Some(event) = events::Transfer::match_and_decode(log) {
-                substreams::log::info!("tx {}", Hex::encode(&trx.hash));
-                substreams::log::info!("from {}", Hex::encode(&event.from));
-                substreams::log::info!("to {}\n", Hex::encode(&event.to));
                 total_trc20_transfers += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),

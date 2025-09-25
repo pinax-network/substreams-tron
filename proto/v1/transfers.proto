@@ -7,7 +7,7 @@ message Events { repeated Transaction transactions = 1; }
 message Transaction {
   bytes hash = 1;
   bytes from = 2;
-  bytes to = 3;
+  optional bytes to = 3;
   uint64 nonce = 5;
   string gas_price = 6; // uint256
   uint64 gas_limit = 7;
