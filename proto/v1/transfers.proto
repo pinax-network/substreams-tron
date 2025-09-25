@@ -7,6 +7,10 @@ message Events { repeated Transaction transactions = 1; }
 message Transaction {
   bytes hash = 1;
   bytes from = 2;
+  // Possible reasons for None 'to' address:
+  // - withdrew unstaked asset
+  // - claim rewards
+  // - canceled unstaking
   optional bytes to = 3;
   uint64 nonce = 5;
   string gas_price = 6; // uint256

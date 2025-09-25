@@ -22,7 +22,10 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &pb::Events) {
                 Some(addr) => tron_base58_from_bytes(addr).unwrap(),
                 None => "".to_string(),
             };
-            // Validator Claim Rewards
+            // Possible reasons for None 'to' address:
+            // - withdrew unstaked asset
+            // - claim rewards
+            // - canceled unstaking
             if tx.to.is_none() {
                 row.set("from", tx_to);
                 row.set("to", from);
