@@ -1,9 +1,7 @@
 -- Store signed balance changes
+-- Does not allow to query historical balances at a specific block
+-- but allows to compute current balances efficiently
 CREATE TABLE IF NOT EXISTS balance_deltas (
-    -- block
-    block_num      UInt32,
-    timestamp      DateTime(0, 'UTC'),
-
     -- balance
     contract       LowCardinality(String),
     account        String,
@@ -11,16 +9,11 @@ CREATE TABLE IF NOT EXISTS balance_deltas (
     -- signed change
     amount_delta   Int256,
 
-    -- (optional) provenance if you ever need it
-    tx_index       UInt32,
-    log_index      UInt32,
-
     INDEX idx_contract (contract) TYPE bloom_filter(0.005) GRANULARITY 1,
-    INDEX idx_account  (account)  TYPE bloom_filter(0.005) GRANULARITY 1,
-    INDEX idx_block    (block_num) TYPE minmax GRANULARITY 1
+    INDEX idx_account  (account)  TYPE bloom_filter(0.005) GRANULARITY 1
 )
 ENGINE = SummingMergeTree(amount_delta)
-ORDER BY (contract, account, block_num, timestamp, tx_index, log_index);
+ORDER BY (contract, account);
 
 -- +credits: to-account receives amount
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_to_deltas
@@ -29,8 +22,7 @@ AS
 SELECT
     log_address                                  AS contract,
     `to`                                         AS account,
-    CAST(amount AS Int256)                       AS amount_delta,
-    block_num, timestamp, tx_index, log_index
+    CAST(amount AS Int256)                       AS amount_delta
 FROM trc20_transfer;
 
 -- -debits: from-account sends amount (negative delta)
@@ -40,14 +32,11 @@ AS
 SELECT
     log_address                                  AS contract,
     `from`                                       AS account,
-    -CAST(amount AS Int256)                      AS amount_delta,
-    block_num, timestamp, tx_index, log_index
+    -CAST(amount AS Int256)                      AS amount_delta
 FROM trc20_transfer;
 
 CREATE OR REPLACE VIEW balances AS
 SELECT
-    max(block_num) AS block_num,
-    max(timestamp) AS timestamp,
     contract,
     account,
     sum(amount_delta) AS balance
