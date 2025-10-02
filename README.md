@@ -13,7 +13,7 @@ Substreams for tracking Token transfers/balances for both Native & TRC-20 on the
 - [ ] DEX
   - [ ] JustSwap
   - [ ] SunSwap
--[ ] Tokens
+- [ ] Tokens
   - [x] USDT
   - [ ] WTRX
   - [ ] USDD
