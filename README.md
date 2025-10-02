@@ -6,15 +6,15 @@ Substreams for tracking Token transfers/balances for both Native & TRC-20 on the
 
 - [x] TRC-20
   - [x] Transfers
-  - [ ] Balances
+  - [x] Balances (using `SummingMergeTree`)
 - [ ] Native
-  - [ ] Transfers
+  - [x] Transfers
   - [ ] Balances
 - [ ] DEX
   - [ ] JustSwap
   - [ ] SunSwap
-- [ ] Tokens
-  - [ ] USDT
+-[ ] Tokens
+  - [x] USDT
   - [ ] WTRX
   - [ ] USDD
   - [ ] sTRX (Staked TRX)
