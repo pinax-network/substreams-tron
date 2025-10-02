@@ -1,0 +1,29 @@
+specVersion: v0.1.0
+package:
+  name: tron_justswap
+  version: v0.1.0
+  url: https://github.com/pinax-network/substreams-tron
+  description: JustSwap V1 DEX Events
+  image: ../image.png
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/justswap.wasm
+
+protobuf:
+  files:
+    - v1/justswap.proto
+  importPaths:
+    - .
+
+modules:
+  - name: map_events
+    kind: map
+    doc: JustSwap V1 TokenPurchase, TrxPurchase, AddLiquidity, and RemoveLiquidity events
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:tron.justswap.v1.Events
+
+network: mainnet

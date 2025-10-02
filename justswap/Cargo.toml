@@ -1,0 +1,19 @@
+[package]
+name = "justswap"
+description = "JustSwap V1 DEX Events"
+edition = { workspace = true }
+version = { workspace = true }
+authors = ["Denis <denis@pinax.network>"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+substreams = { workspace = true }
+substreams-ethereum = { workspace = true }
+substreams-abis = { workspace = true }
+proto = { path = "../proto" }
+prost = { workspace = true }
+
+[build-dependencies]
+prost-build = { workspace = true }
