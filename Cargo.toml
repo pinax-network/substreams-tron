@@ -8,6 +8,9 @@ members = [
   "sunswap",
   "justswap",
 
+  # LaunchPad
+  "sunpump",
+
   # Common
   "proto",
   "common",
@@ -22,7 +25,7 @@ license = "Apache-2.0"
 
 [workspace.dependencies]
 substreams = "0.6.1"
-substreams-abis = "0.5.0"
+substreams-abis = "0.5.1"
 substreams-ethereum = "0.10.6"
 substreams-database-change = "2.1.2"
 prost = "0.13"

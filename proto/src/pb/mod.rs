@@ -14,6 +14,13 @@ pub mod tron {
             // @@protoc_insertion_point(tron.sunswap.v1)
         }
     }
+    pub mod sunpump {
+        // @@protoc_insertion_point(attribute:tron.sunpump.v1)
+        pub mod v1 {
+            include!("tron.sunpump.v1.rs");
+            // @@protoc_insertion_point(tron.sunpump.v1)
+        }
+    }
     pub mod transfers {
         // @@protoc_insertion_point(attribute:tron.transfers.v1)
         pub mod v1 {

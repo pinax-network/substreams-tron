@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package tron.sunpump.v1;
+
+message Events { repeated Transaction transactions = 1; }
+
+message Transaction {
+  bytes hash = 1;
+  bytes from = 2;
+  optional bytes to = 3;
+  uint64 nonce = 5;
+  string gas_price = 6; // uint256
+  uint64 gas_limit = 7;
+  uint64 gas_used = 8;
+  string value = 9; // uint256
+  repeated Log logs = 10;
+}
+
+message Log {
+  bytes address = 1;
+  uint64 ordinal = 2;
+  oneof log {
+    LaunchPending launch_pending = 10;
+    LauncherChanged launcher_changed = 11;
+    MinTxFeeSet min_tx_fee_set = 12;
+    MintFeeSet mint_fee_set = 13;
+    OperatorChanged operator_changed = 14;
+    OwnerChanged owner_changed = 15;
+    PendingOwnerSet pending_owner_set = 16;
+    PurchaseFeeSet purchase_fee_set = 17;
+    SaleFeeSet sale_fee_set = 18;
+    TokenCreate token_create = 19;
+    TokenLaunched token_launched = 20;
+    TokenPurchased token_purchased = 21;
+    TokenSold token_sold = 22;
+  }
+}
+
+message LaunchPending {
+  bytes token = 1;
+}
+
+message LauncherChanged {
+  bytes old_launcher = 1;
+  bytes new_launcher = 2;
+}
+
+message MinTxFeeSet {
+  string old_fee = 1; // uint256
+  string new_fee = 2; // uint256
+}
+
+message MintFeeSet {
+  string old_fee = 1; // uint256
+  string new_fee = 2; // uint256
+}
+
+message OperatorChanged {
+  bytes old_operator = 1;
+  bytes new_operator = 2;
+}
+
+message OwnerChanged {
+  bytes old_owner = 1;
+  bytes new_owner = 2;
+}
+
+message PendingOwnerSet {
+  bytes old_pending_owner = 1;
+  bytes new_pending_owner = 2;
+}
+
+message PurchaseFeeSet {
+  string old_fee = 1; // uint256
+  string new_fee = 2; // uint256
+}
+
+message SaleFeeSet {
+  string old_fee = 1; // uint256
+  string new_fee = 2; // uint256
+}
+
+message TokenCreate {
+  bytes token_address = 1;
+  string token_index = 2; // uint256
+  bytes creator = 3;
+}
+
+message TokenLaunched {
+  bytes token = 1;
+}
+
+message TokenPurchased {
+  bytes token = 1;
+  bytes buyer = 2;
+  string trx_amount = 3;    // uint256
+  string fee = 4;           // uint256
+  string token_amount = 5;  // uint256
+  string token_reserve = 6; // uint256
+}
+
+message TokenSold {
+  bytes token = 1;
+  bytes seller = 2;
+  string trx_amount = 3;   // uint256
+  string fee = 4;          // uint256
+  string token_amount = 5; // uint256
+}
