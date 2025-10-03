@@ -1,14 +1,103 @@
 syntax = "proto3";
 
-package sf.substreams.foundational_store.v1;
-
 import "google/protobuf/any.proto";
 
+package sf.substreams.foundational_store.v1;
+
+option go_package = "github.com/streamingfast/substreams-foundational-store/pb/sf/substreams/foundational-store/v1;foundationalstorev1";
+
+// Store service provides access to foundational store data with fork-aware,
+// block-versioned key-value operations. Designed for high-performance serving
+// of Substreams output data with blockchain reorganization support.
+service Store {
+  // Get retrieves a single value by key at a specific block number
+  rpc Get(GetRequest) returns (GetResponse);
+  // GetAll retrieves multiple values by keys at a specific block number
+  rpc GetAll(GetAllRequest) returns (GetAllResponse);
+}
+
+// Specifies which value to retrieve at a specific block
+message GetRequest {
+  // Block number for data retrieval
+  // Required for gRPC calls, specifies the exact block height for querying
+  // Must be left blank (0) for Substreams WASM intrinsics, runtime provides
+  // block context
+  uint64 block_number = 1;
+
+  // Block hash for data retrieval
+  // Required for gRPC calls, ensures block identity and fork-awareness
+  // Must be left blank (empty) for Substreams WASM intrinsics, runtime provides
+  // block context
+  bytes block_hash = 2;
+
+  bool omit_deleted = 3;
+  bytes key = 4;
+}
+
+// Contains the retrieved value and status
+message GetResponse {
+  ResponseCode code = 1;
+  // The stored value (only present when response = FOUND)
+  google.protobuf.Any value = 2;
+  bool block_reached = 3;
+}
+
+// Specifies multiple values to retrieve at a specific block
+message GetAllRequest {
+  // Block number for data retrieval
+  // Required for gRPC calls, specifies the exact block height for querying
+  // Must be left blank (0) for Substreams WASM intrinsics, runtime provides
+  // block context
+  uint64 block_number = 1;
+
+  // Block hash for data retrieval
+  // Required for gRPC calls, ensures block identity and fork-awareness
+  // Must be left blank (empty) for Substreams WASM intrinsics, runtime provides
+  // block context
+  bytes block_hash = 2;
+
+  bool omit_deleted = 3;
+  repeated bytes keys = 4;
+}
+
+// Pairs a key with its individual response
+message ResponseEntry {
+  bytes key = 1;
+  GetResponse response = 2;
+}
+
+// Contains all retrieved entries with batch-level metadata
+message GetAllResponse {
+  repeated ResponseEntry entries = 1;
+  // Whether the requested block has been processed by the store (applies to all
+  // entries)
+  bool block_reached = 2;
+}
+
+// Indicates the result of a get operation with detailed status information
+enum ResponseCode {
+  // Default value, should not be used
+  RESPONSE_CODE_UNSPECIFIED = 0;
+  // Key exists and value was retrieved successfully
+  RESPONSE_CODE_FOUND = 1;
+  // Key does not exist at the requested block
+  RESPONSE_CODE_NOT_FOUND = 2;
+  // Key was deleted after finality (LIB) -> historical reference
+  RESPONSE_CODE_NOT_FOUND_FINALIZE = 3;
+  // Requested block number has not been processed yet (block_number >
+  // head_block)
+  RESPONSE_CODE_NOT_FOUND_BLOCK_NOT_REACHED = 4;
+}
+
+// Represents a key-value pair in the store used for Substreams sink operations
 message Entry {
   bytes key = 1;
   google.protobuf.Any value = 2;
 }
 
+// Container for multiple key-value pairs, typically used as Substreams module
+// output
 message Entries {
+  // Collection of entries to be stored atomically at the same block number
   repeated Entry entries = 1;
 }

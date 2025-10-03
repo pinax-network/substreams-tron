@@ -9,8 +9,10 @@ protobuf:
     - v1/justswap.proto
     - v1/sunswap.proto
     - v1/sunpump.proto
+    - v1/foundational_store.proto
 
   excludePaths:
     - sf/substreams
     - sf/tron
     - google
+    - evm

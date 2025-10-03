@@ -32,7 +32,7 @@ modules:
     kind: map
     doc: Convert PairCreated events to Foundational Store format
     inputs:
-      - map: map_events
+      - source: sf.ethereum.type.v2.Block
     output:
       type: proto:sf.substreams.foundational_store.v1.Entries
 
