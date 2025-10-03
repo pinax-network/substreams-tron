@@ -43,7 +43,7 @@ pub struct Log {
 /// Nested message and enum types in `Log`.
 pub mod log {
     #[allow(clippy::derive_partial_eq_without_eq)]
-    #[derive(Clone, PartialEq, ::prost::Oneof)]
+#[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Log {
         #[prost(message, tag="10")]
         LaunchPending(super::LaunchPending),
@@ -205,3 +205,4 @@ pub struct TokenSold {
     #[prost(string, tag="5")]
     pub token_amount: ::prost::alloc::string::String,
 }
+// @@protoc_insertion_point(module)
