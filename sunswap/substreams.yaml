@@ -6,34 +6,28 @@ package:
   description: SunSwap V2 DEX Events
   image: ../image.png
 
+imports:
+  # Stores Substreams
+  sunswap-store: ../sunswap-store/substreams.yaml
+
 binaries:
   default:
     type: wasm/rust-v1
     file: ../target/wasm32-unknown-unknown/release/sunswap.wasm
 
-protobuf:
-  files:
-    - v1/sunswap.proto
-  descriptorSets:
-    - module: buf.build/streamingfast/substreams-foundational-store
-  importPaths:
-    - ../proto
+# protobuf:
+#   files:
+#     - v1/sunswap.proto
+#   importPaths:
+#     - ../proto
 
 modules:
   - name: map_events
     kind: map
-    doc: SunSwap V2 Swap, Mint, Burn, and Sync events
     inputs:
       - source: sf.ethereum.type.v2.Block
+      - store: sunswap-store:store_pair_created
     output:
       type: proto:tron.sunswap.v1.Events
-
-  - name: store_pair_created
-    kind: map
-    doc: Convert PairCreated events to Foundational Store format
-    inputs:
-      - source: sf.ethereum.type.v2.Block
-    output:
-      type: proto:sf.substreams.foundational_store.v1.Entries
 
 network: tron

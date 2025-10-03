@@ -1,0 +1,37 @@
+specVersion: v0.1.0
+package:
+  name: tron_sunswap_store
+  version: v0.1.0
+  url: https://github.com/pinax-network/substreams-tron
+  description: SunSwap Foundational Stores
+  image: ../image.png
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/sunswap_store.wasm
+
+protobuf:
+  files:
+    - v1/sunswap.proto
+  descriptorSets:
+    - module: buf.build/streamingfast/substreams-foundational-store
+  importPaths:
+    - ../proto
+
+modules:
+  - name: store_pair_created
+    kind: store
+    updatePolicy: set
+    valueType: proto:tron.sunswap.v1.PairCreated
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+
+  - name: foundational_store_pair_created
+    kind: map
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:sf.substreams.foundational_store.v1.Entries
+
+network: tron

@@ -1,12 +1,12 @@
-mod stores;
-
-use proto::pb::tron::sunswap::v1 as pb;
+use proto::pb::tron::sunswap::v1::{self as pb, PairCreated};
+use substreams::store::StoreGetProto;
+use substreams::{prelude::*, Hex};
 use substreams_abis::tvm::sunswap::v2 as sunswap;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
 
 #[substreams::handlers::map]
-fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
+fn map_events(block: Block, store: StoreGetProto<PairCreated>) -> Result<pb::Events, substreams::errors::Error> {
     let mut events_output = pb::Events::default();
     let mut total_swaps = 0;
     let mut total_mints = 0;
@@ -36,6 +36,19 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             // Swap event
             if let Some(event) = sunswap::pair::events::Swap::match_and_decode(log) {
                 total_swaps += 1;
+                let created_pair = store.get_first(Hex::encode(&log.address));
+
+                if let Some(created_pair) = created_pair {
+                    substreams::log::info!(
+                        "Swap event detected in pair: {} (token0: {}, token1: {})",
+                        Hex::encode(&created_pair.pair),
+                        Hex::encode(&created_pair.token0),
+                        Hex::encode(&created_pair.token1)
+                    );
+                } else {
+                    substreams::log::info!("Swap event detected in unknown pair at address: {}", Hex::encode(&log.address));
+                }
+
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
                     ordinal: log.ordinal,
