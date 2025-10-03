@@ -1,4 +1,4 @@
-ENDPOINT ?= mainnet-evm.tron.streamingfast.io:443
+ENDPOINT ?= tronevm.substreams.pinax.network:443
 START_BLOCK ?= 70000000
 PARALLEL_JOBS ?= 500
 

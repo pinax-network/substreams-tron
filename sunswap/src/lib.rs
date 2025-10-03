@@ -1,25 +1,22 @@
-mod pb {
-    include!(concat!(env!("OUT_DIR"), "/tron.sunswap.v1.rs"));
-}
-
-use pb as sunswap_pb;
-use substreams_abis::tvm::sunswap::v2::pair::events;
+use proto::pb::tron::sunswap::v1 as pb;
+use substreams_abis::tvm::sunswap::v2 as sunswap;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
 
 #[substreams::handlers::map]
-fn map_events(block: Block) -> Result<sunswap_pb::Events, substreams::errors::Error> {
-    let mut events_output = sunswap_pb::Events::default();
+fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
+    let mut events_output = pb::Events::default();
     let mut total_swaps = 0;
     let mut total_mints = 0;
     let mut total_burns = 0;
     let mut total_syncs = 0;
+    let mut total_pair_created = 0;
 
     for trx in block.transactions() {
         let gas_price = trx.clone().gas_price.unwrap_or_default().with_decimal(0).to_string();
         let value = trx.clone().value.unwrap_or_default().with_decimal(0);
         let to = if trx.to.is_empty() { None } else { Some(trx.to.to_vec()) };
-        let mut transaction = sunswap_pb::Transaction {
+        let mut transaction = pb::Transaction {
             from: trx.from.to_vec(),
             to,
             hash: trx.hash.to_vec(),
@@ -35,12 +32,12 @@ fn map_events(block: Block) -> Result<sunswap_pb::Events, substreams::errors::Er
             let log = log_view.log;
 
             // Swap event
-            if let Some(event) = events::Swap::match_and_decode(log) {
+            if let Some(event) = sunswap::pair::events::Swap::match_and_decode(log) {
                 total_swaps += 1;
-                transaction.logs.push(sunswap_pb::Log {
+                transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
                     ordinal: log.ordinal,
-                    log: Some(sunswap_pb::log::Log::Swap(sunswap_pb::Swap {
+                    log: Some(pb::log::Log::Swap(pb::Swap {
                         sender: event.sender.to_vec(),
                         amount0_in: event.amount0_in.to_string(),
                         amount1_in: event.amount1_in.to_string(),
@@ -52,12 +49,12 @@ fn map_events(block: Block) -> Result<sunswap_pb::Events, substreams::errors::Er
             }
 
             // Mint event
-            if let Some(event) = events::Mint::match_and_decode(log) {
+            if let Some(event) = sunswap::pair::events::Mint::match_and_decode(log) {
                 total_mints += 1;
-                transaction.logs.push(sunswap_pb::Log {
+                transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
                     ordinal: log.ordinal,
-                    log: Some(sunswap_pb::log::Log::Mint(sunswap_pb::Mint {
+                    log: Some(pb::log::Log::Mint(pb::Mint {
                         sender: event.sender.to_vec(),
                         amount0: event.amount0.to_string(),
                         amount1: event.amount1.to_string(),
@@ -66,12 +63,12 @@ fn map_events(block: Block) -> Result<sunswap_pb::Events, substreams::errors::Er
             }
 
             // Burn event
-            if let Some(event) = events::Burn::match_and_decode(log) {
+            if let Some(event) = sunswap::pair::events::Burn::match_and_decode(log) {
                 total_burns += 1;
-                transaction.logs.push(sunswap_pb::Log {
+                transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
                     ordinal: log.ordinal,
-                    log: Some(sunswap_pb::log::Log::Burn(sunswap_pb::Burn {
+                    log: Some(pb::log::Log::Burn(pb::Burn {
                         sender: event.sender.to_vec(),
                         amount0: event.amount0.to_string(),
                         amount1: event.amount1.to_string(),
@@ -81,14 +78,29 @@ fn map_events(block: Block) -> Result<sunswap_pb::Events, substreams::errors::Er
             }
 
             // Sync event
-            if let Some(event) = events::Sync::match_and_decode(log) {
+            if let Some(event) = sunswap::pair::events::Sync::match_and_decode(log) {
                 total_syncs += 1;
-                transaction.logs.push(sunswap_pb::Log {
+                transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
                     ordinal: log.ordinal,
-                    log: Some(sunswap_pb::log::Log::Sync(sunswap_pb::Sync {
+                    log: Some(pb::log::Log::Sync(pb::Sync {
                         reserve0: event.reserve0.to_string(),
                         reserve1: event.reserve1.to_string(),
+                    })),
+                });
+            }
+
+            // PairCreated event
+            if let Some(event) = sunswap::factory::events::PairCreated::match_and_decode(log) {
+                total_pair_created += 1;
+                transaction.logs.push(pb::Log {
+                    address: log.address.to_vec(),
+                    ordinal: log.ordinal,
+                    log: Some(pb::log::Log::PairCreated(pb::PairCreated {
+                        token0: event.token0.to_vec(),
+                        token1: event.token1.to_vec(),
+                        pair: event.pair.to_vec(),
+                        extra_data: event.extra_data.to_string(),
                     })),
                 });
             }
@@ -104,5 +116,6 @@ fn map_events(block: Block) -> Result<sunswap_pb::Events, substreams::errors::Er
     substreams::log::info!("Total Mint events: {}", total_mints);
     substreams::log::info!("Total Burn events: {}", total_burns);
     substreams::log::info!("Total Sync events: {}", total_syncs);
+    substreams::log::info!("Total PairCreated events: {}", total_pair_created);
     Ok(events_output)
 }

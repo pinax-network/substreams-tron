@@ -24,13 +24,14 @@ message Log {
     Mint mint = 11;
     Burn burn = 12;
     Sync sync = 13;
+    PairCreated pair_created = 14;
   }
 }
 
 message Swap {
   bytes sender = 1;
-  string amount0_in = 2; // uint256
-  string amount1_in = 3; // uint256
+  string amount0_in = 2;  // uint256
+  string amount1_in = 3;  // uint256
   string amount0_out = 4; // uint256
   string amount1_out = 5; // uint256
   bytes to = 6;
@@ -52,4 +53,11 @@ message Burn {
 message Sync {
   string reserve0 = 1; // uint112
   string reserve1 = 2; // uint112
+}
+
+message PairCreated {
+  bytes token0 = 1;
+  bytes token1 = 2;
+  bytes pair = 3;
+  string extra_data = 4;
 }

@@ -26,4 +26,4 @@ modules:
     output:
       type: proto:tron.transfers.v1.Events
 
-network: mainnet
+network: tron

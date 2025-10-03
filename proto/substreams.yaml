@@ -6,6 +6,8 @@ package:
 protobuf:
   files:
     - v1/transfers.proto
+    - v1/justswap.proto
+    - v1/sunswap.proto
 
   excludePaths:
     - sf/substreams

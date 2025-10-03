@@ -24,29 +24,36 @@ message Log {
     TrxPurchase trx_purchase = 11;
     AddLiquidity add_liquidity = 12;
     RemoveLiquidity remove_liquidity = 13;
+    Snapshot snapshot = 14;
   }
 }
 
 message TokenPurchase {
   bytes buyer = 1;
-  string trx_sold = 2; // uint256
+  string trx_sold = 2;      // uint256
   string tokens_bought = 3; // uint256
 }
 
 message TrxPurchase {
   bytes buyer = 1;
   string tokens_sold = 2; // uint256
-  string trx_bought = 3; // uint256
+  string trx_bought = 3;  // uint256
 }
 
 message AddLiquidity {
   bytes provider = 1;
-  string trx_amount = 2; // uint256
+  string trx_amount = 2;   // uint256
   string token_amount = 3; // uint256
 }
 
 message RemoveLiquidity {
   bytes provider = 1;
-  string trx_amount = 2; // uint256
+  string trx_amount = 2;   // uint256
   string token_amount = 3; // uint256
+}
+
+message Snapshot {
+  bytes operator = 1;
+  string trx_balance = 2;   // uint256
+  string token_balance = 3; // uint256
 }

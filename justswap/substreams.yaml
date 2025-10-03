@@ -15,7 +15,7 @@ protobuf:
   files:
     - v1/justswap.proto
   importPaths:
-    - .
+    - ../proto
 
 modules:
   - name: map_events
@@ -26,4 +26,4 @@ modules:
     output:
       type: proto:tron.justswap.v1.Events
 
-network: mainnet
+network: tron
