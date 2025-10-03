@@ -1,0 +1,29 @@
+specVersion: v0.1.0
+package:
+  name: tron_sunpump
+  version: v0.1.0
+  url: https://github.com/pinax-network/substreams-tron
+  description: SunPump LaunchPad Events
+  image: ../image.png
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/sunpump.wasm
+
+protobuf:
+  files:
+    - v1/sunpump.proto
+  importPaths:
+    - ../proto
+
+modules:
+  - name: map_events
+    kind: map
+    doc: SunPump LaunchPad events including TokenCreate, TokenPurchased, TokenSold, TokenLaunched, and configuration changes
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:tron.sunpump.v1.Events
+
+network: tron
