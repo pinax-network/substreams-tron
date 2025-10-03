@@ -14,6 +14,8 @@ binaries:
 protobuf:
   files:
     - v1/sunswap.proto
+  descriptorSets:
+    - module: buf.build/streamingfast/substreams-foundational-store
   importPaths:
     - ../proto
 
@@ -25,5 +27,13 @@ modules:
       - source: sf.ethereum.type.v2.Block
     output:
       type: proto:tron.sunswap.v1.Events
+
+  - name: store_pair_created
+    kind: map
+    doc: Convert PairCreated events to Foundational Store format
+    inputs:
+      - map: map_events
+    output:
+      type: proto:sf.substreams.foundational_store.v1.Entries
 
 network: tron
