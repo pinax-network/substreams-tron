@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package tron.justswap.v1;
+
+message Events { repeated Transaction transactions = 1; }
+
+message Transaction {
+  bytes hash = 1;
+  bytes from = 2;
+  optional bytes to = 3;
+  uint64 nonce = 5;
+  string gas_price = 6; // uint256
+  uint64 gas_limit = 7;
+  uint64 gas_used = 8;
+  string value = 9; // uint256
+  repeated Log logs = 10;
+}
+
+message Log {
+  bytes address = 1;
+  uint64 ordinal = 2;
+  oneof log {
+    TokenPurchase token_purchase = 10;
+    TrxPurchase trx_purchase = 11;
+    AddLiquidity add_liquidity = 12;
+    RemoveLiquidity remove_liquidity = 13;
+  }
+}
+
+message TokenPurchase {
+  bytes buyer = 1;
+  string trx_sold = 2; // uint256
+  string tokens_bought = 3; // uint256
+}
+
+message TrxPurchase {
+  bytes buyer = 1;
+  string tokens_sold = 2; // uint256
+  string trx_bought = 3; // uint256
+}
+
+message AddLiquidity {
+  bytes provider = 1;
+  string trx_amount = 2; // uint256
+  string token_amount = 3; // uint256
+}
+
+message RemoveLiquidity {
+  bytes provider = 1;
+  string trx_amount = 2; // uint256
+  string token_amount = 3; // uint256
+}

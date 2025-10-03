@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package tron.sunswap.v1;
+
+message Events { repeated Transaction transactions = 1; }
+
+message Transaction {
+  bytes hash = 1;
+  bytes from = 2;
+  optional bytes to = 3;
+  uint64 nonce = 5;
+  string gas_price = 6; // uint256
+  uint64 gas_limit = 7;
+  uint64 gas_used = 8;
+  string value = 9; // uint256
+  repeated Log logs = 10;
+}
+
+message Log {
+  bytes address = 1;
+  uint64 ordinal = 2;
+  oneof log {
+    Swap swap = 10;
+    Mint mint = 11;
+    Burn burn = 12;
+    Sync sync = 13;
+  }
+}
+
+message Swap {
+  bytes sender = 1;
+  string amount0_in = 2; // uint256
+  string amount1_in = 3; // uint256
+  string amount0_out = 4; // uint256
+  string amount1_out = 5; // uint256
+  bytes to = 6;
+}
+
+message Mint {
+  bytes sender = 1;
+  string amount0 = 2; // uint256
+  string amount1 = 3; // uint256
+}
+
+message Burn {
+  bytes sender = 1;
+  string amount0 = 2; // uint256
+  string amount1 = 3; // uint256
+  bytes to = 4;
+}
+
+message Sync {
+  string reserve0 = 1; // uint112
+  string reserve1 = 2; // uint112
+}

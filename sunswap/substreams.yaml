@@ -1,0 +1,29 @@
+specVersion: v0.1.0
+package:
+  name: tron_sunswap
+  version: v0.1.0
+  url: https://github.com/pinax-network/substreams-tron
+  description: SunSwap V2 DEX Events
+  image: ../image.png
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/sunswap.wasm
+
+protobuf:
+  files:
+    - v1/sunswap.proto
+  importPaths:
+    - .
+
+modules:
+  - name: map_events
+    kind: map
+    doc: SunSwap V2 Swap, Mint, Burn, and Sync events
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:tron.sunswap.v1.Events
+
+network: mainnet
