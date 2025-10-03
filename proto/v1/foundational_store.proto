@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sf.substreams.foundational_store.v1;
+
+import "google/protobuf/any.proto";
+
+message Entry {
+  bytes key = 1;
+  google.protobuf.Any value = 2;
+}
+
+message Entries {
+  repeated Entry entries = 1;
+}
