@@ -37,30 +37,22 @@ fn map_events(block: Block, store: StoreGetProto<PairCreated>) -> Result<pb::Eve
             if let Some(event) = sunswap::pair::events::Swap::match_and_decode(log) {
                 total_swaps += 1;
                 let created_pair = store.get_first(Hex::encode(&log.address));
-
                 if let Some(created_pair) = created_pair {
-                    substreams::log::info!(
-                        "Swap event detected in pair: {} (token0: {}, token1: {})",
-                        Hex::encode(&created_pair.pair),
-                        Hex::encode(&created_pair.token0),
-                        Hex::encode(&created_pair.token1)
-                    );
-                } else {
-                    substreams::log::info!("Swap event detected in unknown pair at address: {}", Hex::encode(&log.address));
+                    transaction.logs.push(pb::Log {
+                        address: log.address.to_vec(),
+                        ordinal: log.ordinal,
+                        log: Some(pb::log::Log::Swap(pb::Swap {
+                            sender: event.sender.to_vec(),
+                            amount0_in: event.amount0_in.to_string(),
+                            amount1_in: event.amount1_in.to_string(),
+                            amount0_out: event.amount0_out.to_string(),
+                            amount1_out: event.amount1_out.to_string(),
+                            to: event.to.to_vec(),
+                            token0: created_pair.token0,
+                            token1: created_pair.token1,
+                        })),
+                    });
                 }
-
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::Swap(pb::Swap {
-                        sender: event.sender.to_vec(),
-                        amount0_in: event.amount0_in.to_string(),
-                        amount1_in: event.amount1_in.to_string(),
-                        amount0_out: event.amount0_out.to_string(),
-                        amount1_out: event.amount1_out.to_string(),
-                        to: event.to.to_vec(),
-                    })),
-                });
             }
 
             // Mint event

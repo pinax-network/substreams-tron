@@ -35,6 +35,9 @@ message Swap {
   string amount0_out = 4; // uint256
   string amount1_out = 5; // uint256
   bytes to = 6;
+  // PairCreated store
+  bytes token0 = 7;
+  bytes token1 = 8;
 }
 
 message Mint {
