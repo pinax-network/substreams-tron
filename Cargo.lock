@@ -101,6 +101,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2fd1289c04a9ea8cb22300a459a72a385d7c73d3259e2ed7dcb2af674838cfa9"
 
 [[package]]
+name = "clickhouse-tron-dex"
+version = "0.0.0"
+dependencies = [
+ "common",
+ "hex",
+ "proto",
+ "substreams",
+ "substreams-database-change",
+ "substreams-ethereum",
+]
+
+[[package]]
 name = "clickhouse-tron-tokens"
 version = "0.0.0"
 dependencies = [
