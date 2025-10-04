@@ -7,7 +7,7 @@ enum Keys {
   PAIR_CREATED = 1;
 }
 
-// Key: <pair bytes>
+// key = <1-byte prefix of Keys enum> + <pair bytes>
 message PairCreated {
   bytes token0 = 1;
   bytes token1 = 2;

@@ -1,6 +1,6 @@
 use prost::Message;
 use prost_types::Any;
-use proto::pb::tron::foundational_store::v1::PairCreated;
+use proto::pb::tron::foundational_store::v1::{Keys, PairCreated};
 use substreams::pb::sf::substreams::foundational_store::v1::{Entries, Entry};
 use substreams_abis::tvm::sunswap::v2 as sunswap;
 use substreams_ethereum::pb::eth::v2::Block;
@@ -22,7 +22,7 @@ pub fn foundational_store(block: Block) -> Result<Entries, substreams::errors::E
                     token0: event.token0,
                     token1: event.token1,
                 };
-                entries.push(entry(event.pair, &payload, URL_PAIR_CREATED));
+                entries.push(entry_with_prefix(Keys::PairCreated, event.pair, &payload, URL_PAIR_CREATED));
             }
         }
     }
@@ -39,9 +39,16 @@ fn pack_any<T: Message>(msg: &T, type_url: &str) -> Any {
     }
 }
 
-fn entry<K: Into<Vec<u8>>, M: Message>(key: K, msg: &M, type_url: &str) -> Entry {
+fn entry_with_prefix<M: Message>(prefix: Keys, key: Vec<u8>, msg: &M, type_url: &str) -> Entry {
     Entry {
-        key: key.into(),
+        key: prefixed_key(prefix, key),
         value: Some(pack_any(msg, type_url)),
     }
+}
+
+fn prefixed_key(prefix: Keys, key: Vec<u8>) -> Vec<u8> {
+    let mut out = Vec::with_capacity(1 + key.len());
+    out.push(prefix as i32 as u8); // safe since enum values are small ints
+    out.extend_from_slice(&key);
+    out
 }
