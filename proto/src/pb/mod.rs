@@ -7,6 +7,13 @@ pub mod tron {
             // @@protoc_insertion_point(tron.justswap.v1)
         }
     }
+    pub mod stores {
+        // @@protoc_insertion_point(attribute:tron.stores.v1)
+        pub mod v1 {
+            include!("tron.stores.v1.rs");
+            // @@protoc_insertion_point(tron.stores.v1)
+        }
+    }
     pub mod sunpump {
         // @@protoc_insertion_point(attribute:tron.sunpump.v1)
         pub mod v1 {

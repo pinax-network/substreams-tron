@@ -1,6 +1,6 @@
 [package]
-name = "sunswap-store"
-description = "SunSwap Foundational Stores"
+name = "tron-stores"
+description = "Tron Stores"
 edition = { workspace = true }
 version = { workspace = true }
 authors = ["Denis <denis@pinax.network>"]

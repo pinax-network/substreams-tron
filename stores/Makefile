@@ -1,7 +1,7 @@
 ENDPOINT ?= tronevm.substreams.pinax.network:443
 # ENDPOINT ?= mainnet-evm.tron.streamingfast.io:443
-START_BLOCK ?= 1000000
-PARALLEL_JOBS ?= 500
+START_BLOCK ?= 24000000
+PARALLEL_JOBS ?= 5000
 
 .PHONY: build
 build:
@@ -17,7 +17,7 @@ noop: build
 
 .PHONY: gui
 gui: build
-	substreams gui -e $(ENDPOINT) substreams.yaml store_pair_created -s $(START_BLOCK) -t 0 --limit-processed-blocks 0 -H "X-Substreams-Parallel-Workers: $(PARALLEL_JOBS)"  --production-mode
+	substreams gui -e $(ENDPOINT) substreams.yaml foundational_store_pair_created -s $(START_BLOCK) -t 0 --limit-processed-blocks 0 -H "X-Substreams-Parallel-Workers: $(PARALLEL_JOBS)" --production-mode
 
 .PHONY: prod
 prod: build

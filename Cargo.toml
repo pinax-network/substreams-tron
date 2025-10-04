@@ -6,11 +6,11 @@ members = [
 
   # DEX
   "sunswap",
-  "sunswap-store",
   "justswap",
   "sunpump",
 
   # Common
+  "stores",
   "proto",
   "common",
 ]

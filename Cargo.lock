@@ -1294,19 +1294,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sunswap-store"
-version = "0.0.0"
-dependencies = [
- "prost 0.13.5",
- "prost-build 0.13.5",
- "prost-types 0.13.5",
- "proto",
- "substreams",
- "substreams-abis",
- "substreams-ethereum",
-]
-
-[[package]]
 name = "syn"
 version = "1.0.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1446,6 +1433,19 @@ name = "transfers"
 version = "0.0.0"
 dependencies = [
  "common",
+ "proto",
+ "substreams",
+ "substreams-abis",
+ "substreams-ethereum",
+]
+
+[[package]]
+name = "tron-stores"
+version = "0.0.0"
+dependencies = [
+ "prost 0.13.5",
+ "prost-build 0.13.5",
+ "prost-types 0.13.5",
  "proto",
  "substreams",
  "substreams-abis",
