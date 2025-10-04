@@ -5,7 +5,7 @@ use substreams_ethereum::Event;
 
 #[substreams::handlers::map]
 fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
-    let mut events_output = pb::Events::default();
+    let mut events = pb::Events::default();
     let mut total_launch_pending = 0;
     let mut total_launcher_changed = 0;
     let mut total_min_tx_fee_set = 0;
@@ -212,11 +212,12 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
         }
 
         if !transaction.logs.is_empty() {
-            events_output.transactions.push(transaction);
+            events.transactions.push(transaction);
         }
     }
 
     substreams::log::info!("Total Transactions: {}", block.transaction_traces.len());
+    substreams::log::info!("Total Events: {}", events.transactions.len());
     substreams::log::info!("Total LaunchPending events: {}", total_launch_pending);
     substreams::log::info!("Total LauncherChanged events: {}", total_launcher_changed);
     substreams::log::info!("Total MinTxFeeSet events: {}", total_min_tx_fee_set);
@@ -230,5 +231,5 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
     substreams::log::info!("Total TokenLaunched events: {}", total_token_launched);
     substreams::log::info!("Total TokenPurchased events: {}", total_token_purchased);
     substreams::log::info!("Total TokenSold events: {}", total_token_sold);
-    Ok(events_output)
+    Ok(events)
 }

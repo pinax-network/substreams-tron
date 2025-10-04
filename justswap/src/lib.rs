@@ -5,7 +5,7 @@ use substreams_ethereum::Event;
 
 #[substreams::handlers::map]
 fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
-    let mut events_output = pb::Events::default();
+    let mut events = pb::Events::default();
     let mut total_token_purchases = 0;
     let mut total_trx_purchases = 0;
     let mut total_add_liquidity = 0;
@@ -103,15 +103,16 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
         }
 
         if !transaction.logs.is_empty() {
-            events_output.transactions.push(transaction);
+            events.transactions.push(transaction);
         }
     }
 
     substreams::log::info!("Total Transactions: {}", block.transaction_traces.len());
+    substreams::log::info!("Total Events: {}", events.transactions.len());
     substreams::log::info!("Total TokenPurchase events: {}", total_token_purchases);
     substreams::log::info!("Total TrxPurchase events: {}", total_trx_purchases);
     substreams::log::info!("Total AddLiquidity events: {}", total_add_liquidity);
     substreams::log::info!("Total RemoveLiquidity events: {}", total_remove_liquidity);
     substreams::log::info!("Total Snapshot events: {}", total_snapshot);
-    Ok(events_output)
+    Ok(events)
 }

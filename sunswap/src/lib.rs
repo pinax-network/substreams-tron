@@ -1,13 +1,11 @@
-use proto::pb::tron::sunswap::v1::{self as pb, PairCreated};
-use substreams::store::StoreGetProto;
-use substreams::{prelude::*, Hex};
+use proto::pb::tron::sunswap::v1 as pb;
 use substreams_abis::tvm::sunswap::v2 as sunswap;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
 
 #[substreams::handlers::map]
-fn map_events(block: Block, store: StoreGetProto<PairCreated>) -> Result<pb::Events, substreams::errors::Error> {
-    let mut events_output = pb::Events::default();
+fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
+    let mut events = pb::Events::default();
     let mut total_swaps = 0;
     let mut total_mints = 0;
     let mut total_burns = 0;
@@ -109,15 +107,16 @@ fn map_events(block: Block, store: StoreGetProto<PairCreated>) -> Result<pb::Eve
         }
 
         if !transaction.logs.is_empty() {
-            events_output.transactions.push(transaction);
+            events.transactions.push(transaction);
         }
     }
 
     substreams::log::info!("Total Transactions: {}", block.transaction_traces.len());
+    substreams::log::info!("Total Events: {}", events.transactions.len());
     substreams::log::info!("Total Swap events: {}", total_swaps);
     substreams::log::info!("Total Mint events: {}", total_mints);
     substreams::log::info!("Total Burn events: {}", total_burns);
     substreams::log::info!("Total Sync events: {}", total_syncs);
     substreams::log::info!("Total PairCreated events: {}", total_pair_created);
-    Ok(events_output)
+    Ok(events)
 }

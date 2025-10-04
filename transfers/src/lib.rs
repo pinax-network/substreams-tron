@@ -51,6 +51,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
         }
     }
     substreams::log::info!("Total Transactions: {}", block.transaction_traces.len());
+    substreams::log::info!("Total Events: {}", events.transactions.len());
     substreams::log::info!("Total TRC20 Transfer events: {}", total_trc20_transfers);
     substreams::log::info!("Total Native transfers: {}", total_native_transfers);
     Ok(events)
