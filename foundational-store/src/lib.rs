@@ -6,7 +6,7 @@ use substreams_abis::tvm::sunswap::v2 as sunswap;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
 
-const URL_PAIR_CREATED: &str = "type.googleapis.com/tron.stores.v1.PairCreated";
+const URL_PAIR_CREATED: &str = "type.googleapis.com/tron.foundational_store.v1.PairCreated";
 
 #[substreams::handlers::map]
 pub fn foundational_store(block: Block) -> Result<Entries, substreams::errors::Error> {
