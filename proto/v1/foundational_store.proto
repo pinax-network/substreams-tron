@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package tron.foundational_store.v1;
+
+enum Keys {
+  STORE_TYPE_UNSPECIFIED = 0;
+  PAIR_CREATED = 1;
+}
+
+// Key: <pair bytes>
+message PairCreated {
+  bytes token0 = 1;
+  bytes token1 = 2;
+}

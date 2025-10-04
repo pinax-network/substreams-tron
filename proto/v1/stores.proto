@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package tron.stores.v1;
-
-// Key: <pair>
-message PairCreatedStore {
-  bytes token0 = 1;
-  bytes token1 = 2;
-}

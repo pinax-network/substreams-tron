@@ -10,7 +10,7 @@ members = [
   "sunpump",
 
   # Common
-  "stores",
+  "foundational-store",
   "proto",
   "common",
 ]

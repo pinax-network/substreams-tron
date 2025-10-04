@@ -1,33 +1,26 @@
 specVersion: v0.1.0
 package:
-  name: tron_stores
+  name: tron_foundational_store
   version: v0.1.0
   url: https://github.com/pinax-network/substreams-tron
-  description: Tron Stores
+  description: Tron Foundational Store
   image: ../image.png
 
 binaries:
   default:
     type: wasm/rust-v1
-    file: ../target/wasm32-unknown-unknown/release/tron_stores.wasm
+    file: ../target/wasm32-unknown-unknown/release/tron_foundational_store.wasm
 
 protobuf:
   files:
-    - v1/stores.proto
+    - v1/foundational_store.proto
   descriptorSets:
     - module: buf.build/streamingfast/substreams-foundational-store
   importPaths:
     - ../proto
 
 modules:
-  - name: store_pair_created
-    kind: store
-    updatePolicy: set
-    valueType: proto:tron.stores.v1.PairCreatedStore
-    inputs:
-      - source: sf.ethereum.type.v2.Block
-
-  - name: foundational_store_pair_created
+  - name: foundational_store
     kind: map
     inputs:
       - source: sf.ethereum.type.v2.Block
