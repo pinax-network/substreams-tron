@@ -8,6 +8,7 @@ members = [
   "sunswap",
   "justswap",
   "sunpump",
+  "clickhouse-tron-dex",
 
   # Common
   "foundational-store",
