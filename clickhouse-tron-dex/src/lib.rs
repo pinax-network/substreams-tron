@@ -1,4 +1,8 @@
-mod dex_swaps;
+mod justswap;
+mod logs;
+mod sunpump;
+mod sunswap;
+mod transactions;
 
 use proto::pb::tron as pb;
 use substreams::errors::Error;
@@ -15,13 +19,13 @@ pub fn db_out(
     let mut tables = substreams_database_change::tables::Tables::new();
 
     // Process JustSwap events
-    dex_swaps::process_justswap_events(&mut tables, &clock, &justswap);
+    justswap::process_events(&mut tables, &clock, &justswap);
 
     // Process SunSwap events
-    dex_swaps::process_sunswap_events(&mut tables, &clock, &sunswap);
+    sunswap::process_events(&mut tables, &clock, &sunswap);
 
     // Process SunPump events
-    dex_swaps::process_sunpump_events(&mut tables, &clock, &sunpump);
+    sunpump::process_events(&mut tables, &clock, &sunpump);
 
     // ONLY include blocks if events are present
     if !tables.tables.is_empty() {

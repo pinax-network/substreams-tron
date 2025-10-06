@@ -10,7 +10,7 @@ ALTER TABLE sunswap_swaps
     ADD COLUMN IF NOT EXISTS input_amount      UInt256 COMMENT 'Amount of input tokens swapped',
     ADD COLUMN IF NOT EXISTS output_contract   LowCardinality(String) COMMENT 'Output token identifier (token0/token1)',
     ADD COLUMN IF NOT EXISTS output_amount     UInt256 COMMENT 'Amount of output tokens received',
-    
+
     -- raw amounts for reference --
     ADD COLUMN IF NOT EXISTS amount0_in        UInt256 COMMENT 'Amount of token0 input',
     ADD COLUMN IF NOT EXISTS amount1_in        UInt256 COMMENT 'Amount of token1 input',
