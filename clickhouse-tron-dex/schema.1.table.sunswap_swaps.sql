@@ -12,6 +12,10 @@ ALTER TABLE sunswap_swap
     ADD COLUMN IF NOT EXISTS amount0_out       UInt256 COMMENT 'Amount of token0 output',
     ADD COLUMN IF NOT EXISTS amount1_out       UInt256 COMMENT 'Amount of token1 output',
 
+    -- PairCreated --
+    ADD COLUMN IF NOT EXISTS token0           String COMMENT 'Token0 contract address',
+    ADD COLUMN IF NOT EXISTS token1           String COMMENT 'Token1 contract address',
+
     -- indexes --
     ADD INDEX IF NOT EXISTS idx_sender (sender) TYPE bloom_filter(0.005) GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_to (to) TYPE bloom_filter(0.005) GRANULARITY 1,

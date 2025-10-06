@@ -1,5 +1,6 @@
 use common::tron_base58_from_bytes;
 use proto::pb::tron::{justswap, sunpump, sunswap};
+use substreams::Hex;
 
 pub fn set_template_tx(tx: &impl TxTemplate, tx_index: usize, row: &mut substreams_database_change::tables::Row) {
     let tx_to = match tx.get_to() {
@@ -7,7 +8,7 @@ pub fn set_template_tx(tx: &impl TxTemplate, tx_index: usize, row: &mut substrea
         None => "".to_string(),
     };
     row.set("tx_index", tx_index as u32);
-    row.set("tx_hash", hex::encode(tx.get_hash()));
+    row.set("tx_hash", Hex::encode(tx.get_hash()));
     row.set("tx_from", tron_base58_from_bytes(tx.get_from()).unwrap());
     row.set("tx_to", tx_to);
     row.set("tx_nonce", tx.get_nonce());

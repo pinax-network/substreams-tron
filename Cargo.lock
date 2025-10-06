@@ -105,7 +105,8 @@ name = "clickhouse-tron-dex"
 version = "0.0.0"
 dependencies = [
  "common",
- "hex",
+ "prost 0.13.5",
+ "prost-types 0.13.5",
  "proto",
  "substreams",
  "substreams-database-change",
