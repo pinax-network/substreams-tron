@@ -36,7 +36,7 @@ fn process_sunpump_token_purchased(
     purchase: &sunpump::v1::TokenPurchased,
 ) {
     let key = log_key(clock, tx_index, log_index);
-    let row = tables.create_row("sunpump_swaps", key);
+    let row = tables.create_row("sunpump_token_purchased", key);
 
     // Block and transaction info
     set_clock(clock, row);
@@ -44,15 +44,10 @@ fn process_sunpump_token_purchased(
     set_template_log(log, log_index, row);
 
     // Swap info - TRX -> Token purchase
-    row.set("user", tron_base58_from_bytes(&purchase.buyer).unwrap());
+    row.set("buyer", tron_base58_from_bytes(&purchase.buyer).unwrap());
+    row.set("trx_amount", &purchase.trx_amount);
     row.set("token", tron_base58_from_bytes(&purchase.token).unwrap());
-    row.set("pool", tron_base58_from_bytes(&log.address).unwrap());
-
-    // TRX is input, Token is output
-    row.set("input_contract", "TRX");
-    row.set("input_amount", &purchase.trx_amount);
-    row.set("output_contract", tron_base58_from_bytes(&purchase.token).unwrap());
-    row.set("output_amount", &purchase.token_amount);
+    row.set("token_amount", &purchase.token_amount);
     row.set("fee", &purchase.fee);
     row.set("token_reserve", &purchase.token_reserve);
 }
@@ -67,7 +62,7 @@ fn process_sunpump_token_sold(
     sold: &sunpump::v1::TokenSold,
 ) {
     let key = log_key(clock, tx_index, log_index);
-    let row = tables.create_row("sunpump_swaps", key);
+    let row = tables.create_row("sunpump_token_sold", key);
 
     // Block and transaction info
     set_clock(clock, row);
@@ -75,14 +70,9 @@ fn process_sunpump_token_sold(
     set_template_log(log, log_index, row);
 
     // Swap info - Token -> TRX sale
-    row.set("user", tron_base58_from_bytes(&sold.seller).unwrap());
+    row.set("seller", tron_base58_from_bytes(&sold.seller).unwrap());
     row.set("token", tron_base58_from_bytes(&sold.token).unwrap());
-    row.set("pool", tron_base58_from_bytes(&log.address).unwrap());
-
-    // Token is input, TRX is output
-    row.set("input_contract", tron_base58_from_bytes(&sold.token).unwrap());
-    row.set("input_amount", &sold.token_amount);
-    row.set("output_contract", "TRX");
-    row.set("output_amount", &sold.trx_amount);
+    row.set("token_amount", &sold.token_amount);
+    row.set("trx_amount", &sold.trx_amount);
     row.set("fee", &sold.fee);
 }

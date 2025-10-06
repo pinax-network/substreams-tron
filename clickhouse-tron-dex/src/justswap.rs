@@ -36,7 +36,7 @@ fn process_justswap_token_purchase(
     swap: &justswap::v1::TokenPurchase,
 ) {
     let key = log_key(clock, tx_index, log_index);
-    let row = tables.create_row("justswap_swaps", key);
+    let row = tables.create_row("justswap_token_purchase", key);
 
     // Block and transaction info
     set_clock(clock, row);
@@ -44,14 +44,9 @@ fn process_justswap_token_purchase(
     set_template_log(log, log_index, row);
 
     // Swap info - TRX -> Token
-    row.set("user", tron_base58_from_bytes(&swap.buyer).unwrap());
-    row.set("pool", tron_base58_from_bytes(&log.address).unwrap());
-
-    // TRX is input, Token is output
-    row.set("input_contract", "TRX");
-    row.set("input_amount", &swap.trx_sold);
-    row.set("output_contract", tron_base58_from_bytes(&log.address).unwrap()); // token contract
-    row.set("output_amount", &swap.tokens_bought);
+    row.set("buyer", tron_base58_from_bytes(&swap.buyer).unwrap());
+    row.set("trx_sold", &swap.trx_sold);
+    row.set("tokens_bought", &swap.tokens_bought);
 }
 
 fn process_justswap_trx_purchase(
@@ -64,7 +59,7 @@ fn process_justswap_trx_purchase(
     swap: &justswap::v1::TrxPurchase,
 ) {
     let key = log_key(clock, tx_index, log_index);
-    let row = tables.create_row("justswap_swaps", key);
+    let row = tables.create_row("justswap_trx_purchase", key);
 
     // Block and transaction info
     set_clock(clock, row);
@@ -72,12 +67,9 @@ fn process_justswap_trx_purchase(
     set_template_log(log, log_index, row);
 
     // Swap info - Token -> TRX
-    row.set("user", tron_base58_from_bytes(&swap.buyer).unwrap());
-    row.set("pool", tron_base58_from_bytes(&log.address).unwrap());
+    row.set("buyer", tron_base58_from_bytes(&swap.buyer).unwrap());
 
     // Token is input, TRX is output
-    row.set("input_contract", tron_base58_from_bytes(&log.address).unwrap()); // token contract
-    row.set("input_amount", &swap.tokens_sold);
-    row.set("output_contract", "TRX");
-    row.set("output_amount", &swap.trx_bought);
+    row.set("tokens_sold", &swap.tokens_sold);
+    row.set("trx_bought", &swap.trx_bought);
 }
