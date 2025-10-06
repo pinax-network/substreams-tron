@@ -6,27 +6,22 @@ package:
   description: SunSwap V2 DEX Events
   image: ../image.png
 
-imports:
-  # Stores Substreams
-  sunswap-store: ../sunswap-store/substreams.yaml
-
 binaries:
   default:
     type: wasm/rust-v1
     file: ../target/wasm32-unknown-unknown/release/sunswap.wasm
 
-# protobuf:
-#   files:
-#     - v1/sunswap.proto
-#   importPaths:
-#     - ../proto
+protobuf:
+  files:
+    - v1/sunswap.proto
+  importPaths:
+    - ../proto
 
 modules:
   - name: map_events
     kind: map
     inputs:
       - source: sf.ethereum.type.v2.Block
-      - store: sunswap-store:store_pair_created
     output:
       type: proto:tron.sunswap.v1.Events
 
