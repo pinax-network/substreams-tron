@@ -16,6 +16,9 @@ imports:
   sunswap: ../sunswap/substreams.yaml
   sunpump: ../sunpump/substreams.yaml
 
+  # Foundational Store
+  foundational-store: ../foundational-store/substreams.yaml
+
 binaries:
   default:
     type: wasm/rust-v1
@@ -29,6 +32,7 @@ modules:
       - map: justswap:map_events
       - map: sunswap:map_events
       - map: sunpump:map_events
+      - foundational-store: tron-store@v0.1.0
     output:
       type: proto:sf.substreams.sink.database.v1.DatabaseChanges
 
