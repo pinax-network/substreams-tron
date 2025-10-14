@@ -1,4 +1,5 @@
 .last_generated_hash
+node_modules
 
 # Rust/Cargo generated files
 target/
