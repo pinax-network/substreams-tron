@@ -6,6 +6,7 @@ target/
 debug/
 **/*.rs.bk
 *.pdb
+trc20-metadata
 
 # Substreams specific files
 *.spkg
