@@ -1,10 +1,9 @@
 use common::tron_base58_from_bytes;
-use proto::pb::tron::{foundational_store::v1::Keys, sunswap};
+use proto::pb::tron::sunswap;
 use substreams::{pb::substreams::Clock, store::FoundationalStore};
 use substreams_database_change::tables::Tables;
 
 use crate::{
-    foundational_stores::prefixed_key,
     logs::{log_key, set_template_log},
     set_clock,
     transactions::set_template_tx,
@@ -43,7 +42,7 @@ fn process_sunswap_swap(
     set_template_log(log, log_index, row);
 
     // Get PairCreated
-    let pair_created = store.get(prefixed_key(Keys::PairCreated, log.address.to_vec()));
+    let pair_created = store.get(log.address.to_vec());
     if let Some(value) = &pair_created.value {
         if value.type_url == "type.googleapis.com/tron.foundational_store.v1.PairCreated" {
             if let Ok(decoded) = prost::Message::decode(value.value.as_slice()) {
@@ -56,6 +55,7 @@ fn process_sunswap_swap(
         row.set("token0", "");
         row.set("token1", "");
         substreams::log::info!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
+        panic!("PairCreated not found");
     }
 
     // Swap info
