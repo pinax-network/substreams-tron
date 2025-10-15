@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: tron_foundational_store
-  version: v0.1.1
+  version: v0.1.0
   url: https://github.com/pinax-network/substreams-tron
   description: Tron Foundational Store
   image: ../image.png
