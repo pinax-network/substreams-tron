@@ -49,13 +49,18 @@ fn process_sunswap_swap(
                 let pair: sunswap::v1::PairCreated = decoded;
                 row.set("token0", tron_base58_from_bytes(&pair.token0).unwrap());
                 row.set("token1", tron_base58_from_bytes(&pair.token1).unwrap());
+                substreams::log::info!(
+                    "PairCreated found for address: {}, token0: {}, token1: {}",
+                    tron_base58_from_bytes(&log.address).unwrap(),
+                    tron_base58_from_bytes(&pair.token0).unwrap(),
+                    tron_base58_from_bytes(&pair.token1).unwrap()
+                );
             }
         }
     } else {
         row.set("token0", "");
         row.set("token1", "");
         substreams::log::info!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        panic!("PairCreated not found");
     }
 
     // Swap info
