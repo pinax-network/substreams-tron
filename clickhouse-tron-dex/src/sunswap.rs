@@ -49,6 +49,7 @@ fn process_sunswap_swap(
     if let Some(value) = &pair_created {
         row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
         row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
+        row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
         substreams::log::info!(
             "PairCreated found for address: {}, token0: {}, token1: {}",
             tron_base58_from_bytes(&log.address).unwrap(),
@@ -58,11 +59,13 @@ fn process_sunswap_swap(
     } else {
         row.set("token0", "");
         row.set("token1", "");
+        row.set("factory", "");
         substreams::log::info!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         panic!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
     }
 
     // Swap info
+    row.set("pair", tron_base58_from_bytes(&log.address).unwrap());
     row.set("sender", tron_base58_from_bytes(&event.sender).unwrap());
     row.set("to", tron_base58_from_bytes(&event.to).unwrap());
     row.set("amount0_in", &event.amount0_in);

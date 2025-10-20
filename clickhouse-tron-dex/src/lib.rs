@@ -2,7 +2,6 @@ mod justswap;
 mod logs;
 mod sunpump;
 mod sunswap;
-mod sunswap_foundational_store;
 mod transactions;
 
 use proto::pb::tron as pb;
