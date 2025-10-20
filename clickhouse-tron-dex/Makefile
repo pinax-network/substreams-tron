@@ -1,5 +1,6 @@
 ENDPOINT ?= tronevm.substreams.pinax.network:443
 START_BLOCK ?= 70027397
+STOP_BLOCK ?= 70027397
 PARALLEL_JOBS ?= 500
 
 .PHONY: build
@@ -16,7 +17,7 @@ noop: build
 
 .PHONY: gui
 gui: build
-	substreams gui -e $(ENDPOINT) substreams.yaml db_out -s $(START_BLOCK) --limit-processed-blocks 0
+	substreams gui -e $(ENDPOINT) substreams.yaml db_out -s $(START_BLOCK) -t $(STOP_BLOCK) --limit-processed-blocks 0
 
 .PHONY: prod
 prod: build

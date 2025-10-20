@@ -12,12 +12,12 @@ imports:
   sql: https://github.com/streamingfast/substreams-sink-sql/releases/download/protodefs-v1.0.7/substreams-sink-sql-protodefs-v1.0.7.spkg
 
   # DEX Substreams
-  justswap: ../justswap/substreams.yaml
-  sunswap: ../sunswap/substreams.yaml
-  sunpump: ../sunpump/substreams.yaml
+  justswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.0/tron-justswap-v0.1.0.spkg
+  sunswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.0/tron-sunswap-v0.1.0.spkg
+  sunpump: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.0/tron-sunpump-v0.1.0.spkg
 
   # Foundational Store
-  foundational_store: ../foundational-store/substreams.yaml
+  foundational_store: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.0/tron-foundational-store-v0.1.0.spkg
 
 binaries:
   default:
@@ -32,7 +32,6 @@ modules:
       - map: justswap:map_events
       - map: sunswap:map_events
       - map: sunpump:map_events
-      # - foundational-store: tron-store@v0.1.0
       - store: foundational_store:store_pair_created
     output:
       type: proto:sf.substreams.sink.database.v1.DatabaseChanges
