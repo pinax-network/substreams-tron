@@ -1,7 +1,5 @@
 # Tron: `Substreams`
 
-Substreams for tracking Token transfers/balances for both Native & TRC-20 on the Tron blockchain.
-
 ## Substreams packages
 
 - [x] TRC-20
