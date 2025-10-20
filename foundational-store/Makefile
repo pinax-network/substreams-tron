@@ -13,7 +13,7 @@ pack: build
 
 .PHONY: noop
 noop: build
-	substreams-sink-noop $(ENDPOINT) substreams.yaml foundational_store -H "X-Substreams-Parallel-Workers: $(PARALLEL_JOBS)" $(START_BLOCK):
+	substreams-sink-noop $(ENDPOINT) substreams.yaml foundational_store -H "X-Substreams-Parallel-Workers: $(PARALLEL_JOBS)" :
 
 .PHONY: gui
 gui: build

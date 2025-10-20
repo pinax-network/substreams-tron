@@ -17,6 +17,7 @@ pub fn foundational_store(sunswap: pb::sunswap::v1::Events) -> Result<Entries, s
             // ---- PairCreated ----
             if let Some(pb::sunswap::v1::log::Log::PairCreated(pair_created)) = &log.log {
                 let payload = PairCreated {
+                    factory: log.address.clone(),
                     token0: pair_created.token0.clone(),
                     token1: pair_created.token1.clone(),
                 };
@@ -38,6 +39,7 @@ pub fn store_pair_created(sunswap: pb::sunswap::v1::Events, store: StoreSetProto
             // ---- PairCreated ----
             if let Some(pb::sunswap::v1::log::Log::PairCreated(pair_created)) = &log.log {
                 let payload = PairCreated {
+                    factory: log.address.clone(),
                     token0: pair_created.token0.clone(),
                     token1: pair_created.token1.clone(),
                 };
