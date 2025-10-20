@@ -20,7 +20,7 @@ gui: build
 
 .PHONY: prod
 prod: build
-	substreams gui -e $(ENDPOINT) substreams.yaml db_out -s $(START_BLOCK) -t 0 --limit-processed-blocks 0 --production-mode  -H "X-Substreams-Parallel-Workers: $(PARALLEL_JOBS)"
+	substreams gui -e $(ENDPOINT) substreams.yaml db_out -s $(START_BLOCK) -t 36514533 --limit-processed-blocks 0 --production-mode  -H "X-Substreams-Parallel-Workers: $(PARALLEL_JOBS)"
 
 .PHONY: dev
 dev: build

@@ -21,7 +21,7 @@ pub fn foundational_store(sunswap: pb::sunswap::v1::Events) -> Result<Entries, s
                     token1: pair_created.token1.clone(),
                 };
                 entries.push(Entry {
-                    key: log.address.clone(),
+                    key: pair_created.pair.clone(),
                     value: Some(pack_any(&payload, URL_PAIR_CREATED)),
                 });
             }
@@ -41,7 +41,7 @@ pub fn store_pair_created(sunswap: pb::sunswap::v1::Events, store: StoreSetProto
                     token0: pair_created.token0.clone(),
                     token1: pair_created.token1.clone(),
                 };
-                store.set(log.ordinal, Hex::encode(&log.address), &payload);
+                store.set(log.ordinal, Hex::encode(&pair_created.pair), &payload);
             }
         }
     }
