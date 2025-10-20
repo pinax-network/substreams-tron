@@ -6,6 +6,9 @@ package:
   description: Tron Foundational Store
   image: ../image.png
 
+imports:
+  sunswap: ../sunswap/substreams.yaml
+
 binaries:
   default:
     type: wasm/rust-v1
@@ -23,8 +26,15 @@ modules:
   - name: foundational_store
     kind: map
     inputs:
-      - source: sf.ethereum.type.v2.Block
+      - map: sunswap:map_events
     output:
       type: proto:sf.substreams.foundational_store.v1.Entries
+
+  - name: store_pair_created
+    kind: store
+    updatePolicy: set
+    valueType: proto:tron.foundational_store.v1.PairCreated
+    inputs:
+      - map: sunswap:map_events
 
 network: tron

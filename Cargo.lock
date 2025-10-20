@@ -1461,7 +1461,6 @@ dependencies = [
  "prost-types 0.13.5",
  "proto",
  "substreams",
- "substreams-abis",
  "substreams-ethereum",
 ]
 

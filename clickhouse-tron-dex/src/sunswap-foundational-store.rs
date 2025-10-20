@@ -1,9 +1,9 @@
 use common::tron_base58_from_bytes;
 use proto::pb::tron::foundational_store::v1::PairCreated;
 use proto::pb::tron::sunswap;
-use substreams::pb::substreams::Clock;
 use substreams::store::{StoreGet, StoreGetProto};
 use substreams::Hex;
+use substreams::{pb::substreams::Clock, store::FoundationalStore};
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -13,7 +13,7 @@ use crate::{
 };
 
 // SunSwap Processing
-pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::Events, store: &StoreGetProto<PairCreated>) {
+pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::Events, store: &FoundationalStore) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             if let Some(sunswap::v1::log::Log::Swap(swap)) = &log.log {
@@ -27,7 +27,7 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::
 }
 
 fn process_sunswap_swap(
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -45,21 +45,25 @@ fn process_sunswap_swap(
     set_template_log(log, log_index, row);
 
     // Get PairCreated
-    let pair_created = store.get_first(Hex::encode(log.address.to_vec()));
-    if let Some(value) = &pair_created {
-        row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
-        row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
-        substreams::log::info!(
-            "PairCreated found for address: {}, token0: {}, token1: {}",
-            tron_base58_from_bytes(&log.address).unwrap(),
-            tron_base58_from_bytes(&value.token0).unwrap(),
-            tron_base58_from_bytes(&value.token1).unwrap()
-        );
+    let pair_created = store.get(log.address.to_vec());
+    if let Some(value) = &pair_created.value {
+        if value.type_url == "type.googleapis.com/tron.foundational_store.v1.PairCreated" {
+            if let Ok(decoded) = prost::Message::decode(value.value.as_slice()) {
+                let pair: sunswap::v1::PairCreated = decoded;
+                row.set("token0", tron_base58_from_bytes(&pair.token0).unwrap());
+                row.set("token1", tron_base58_from_bytes(&pair.token1).unwrap());
+                substreams::log::info!(
+                    "PairCreated found for address: {}, token0: {}, token1: {}",
+                    tron_base58_from_bytes(&log.address).unwrap(),
+                    tron_base58_from_bytes(&pair.token0).unwrap(),
+                    tron_base58_from_bytes(&pair.token1).unwrap()
+                );
+            }
+        }
     } else {
         row.set("token0", "");
         row.set("token1", "");
         substreams::log::info!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        panic!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
     }
 
     // Swap info

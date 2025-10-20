@@ -5,9 +5,11 @@ mod sunswap;
 mod transactions;
 
 use proto::pb::tron as pb;
+use proto::pb::tron::foundational_store::v1::PairCreated;
 use substreams::errors::Error;
 use substreams::pb::substreams::Clock;
-use substreams::store::FoundationalStore;
+use substreams::prelude::*;
+use substreams::store::StoreGetProto;
 use substreams_database_change::pb::database::DatabaseChanges;
 
 #[substreams::handlers::map]
@@ -16,7 +18,8 @@ pub fn db_out(
     justswap: pb::justswap::v1::Events,
     sunswap: pb::sunswap::v1::Events,
     sunpump: pb::sunpump::v1::Events,
-    store: FoundationalStore,
+    // store: FoundationalStore,
+    store: StoreGetProto<PairCreated>,
 ) -> Result<DatabaseChanges, Error> {
     let mut tables = substreams_database_change::tables::Tables::new();
 

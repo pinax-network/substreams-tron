@@ -1,36 +1,50 @@
 use prost::Message;
 use prost_types::Any;
+use proto::pb::tron as pb;
 use proto::pb::tron::foundational_store::v1::PairCreated;
 use substreams::pb::sf::substreams::foundational_store::v1::{Entries, Entry};
-use substreams_abis::tvm::sunswap::v2 as sunswap;
-use substreams_ethereum::pb::eth::v2::Block;
-use substreams_ethereum::Event;
+use substreams::store::StoreSetProto;
+use substreams::{prelude::*, Hex};
 
 const URL_PAIR_CREATED: &str = "type.googleapis.com/tron.foundational_store.v1.PairCreated";
 
 #[substreams::handlers::map]
-pub fn foundational_store(block: Block) -> Result<Entries, substreams::errors::Error> {
+pub fn foundational_store(sunswap: pb::sunswap::v1::Events) -> Result<Entries, substreams::errors::Error> {
     let mut entries = Vec::new();
 
-    for trx in block.transactions() {
-        for log_view in trx.receipt().logs() {
-            let log = log_view.log;
-
+    for trx in sunswap.transactions.iter() {
+        for log in trx.logs.iter() {
             // ---- PairCreated ----
-            if let Some(event) = sunswap::factory::events::PairCreated::match_and_decode(log.clone()) {
+            if let Some(pb::sunswap::v1::log::Log::PairCreated(pair_created)) = &log.log {
                 let payload = PairCreated {
-                    token0: event.token0,
-                    token1: event.token1,
+                    token0: pair_created.token0.clone(),
+                    token1: pair_created.token1.clone(),
                 };
                 entries.push(Entry {
-                    key: event.pair,
+                    key: log.address.clone(),
                     value: Some(pack_any(&payload, URL_PAIR_CREATED)),
-                })
+                });
             }
         }
     }
 
     Ok(Entries { entries })
+}
+
+#[substreams::handlers::store]
+pub fn store_pair_created(sunswap: pb::sunswap::v1::Events, store: StoreSetProto<PairCreated>) {
+    for trx in sunswap.transactions.iter() {
+        for log in trx.logs.iter() {
+            // ---- PairCreated ----
+            if let Some(pb::sunswap::v1::log::Log::PairCreated(pair_created)) = &log.log {
+                let payload = PairCreated {
+                    token0: pair_created.token0.clone(),
+                    token1: pair_created.token1.clone(),
+                };
+                store.set(log.ordinal, Hex::encode(&log.address), &payload);
+            }
+        }
+    }
 }
 
 fn pack_any<T: Message>(msg: &T, type_url: &str) -> Any {
