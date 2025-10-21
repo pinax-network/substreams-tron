@@ -36,6 +36,13 @@ fn process_sunswap_swap(
     log_index: usize,
     event: &sunswap::v1::Swap,
 ) {
+    // Swap must have a corresponding PairCreated event
+    let pair_created = store.get_first(Hex::encode(log.address.to_vec()));
+    if pair_created.is_none() {
+        substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
+        return;
+    }
+
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("sunswap_swap", key);
 
@@ -45,7 +52,6 @@ fn process_sunswap_swap(
     set_template_log(log, log_index, row);
 
     // Get PairCreated
-    let pair_created = store.get_first(Hex::encode(log.address.to_vec()));
     if let Some(value) = &pair_created {
         row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
         row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
