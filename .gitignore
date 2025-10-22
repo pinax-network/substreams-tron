@@ -7,6 +7,7 @@ debug/
 **/*.rs.bk
 *.pdb
 trc20-metadata
+state.cursor
 
 # Substreams specific files
 *.spkg
