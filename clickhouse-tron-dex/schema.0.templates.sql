@@ -17,16 +17,16 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
 
     -- log --
     log_index                   UInt32, -- derived from Substreams
-    log_address                 LowCardinality(String),
+    log_address                 String,
     log_ordinal                 UInt32,
 
     -- indexes --
     INDEX idx_timestamp         (timestamp)         TYPE minmax                 GRANULARITY 1,
     INDEX idx_block_num         (block_num)         TYPE minmax                 GRANULARITY 1,
-    INDEX idx_block_hash        (block_hash)        TYPE bloom_filter(0.005)    GRANULARITY 1,
-    INDEX idx_tx_hash           (tx_hash)           TYPE bloom_filter(0.005)    GRANULARITY 1,
-    INDEX idx_tx_from           (tx_from)           TYPE bloom_filter(0.005)    GRANULARITY 1,
-    INDEX idx_tx_to             (tx_to)             TYPE bloom_filter(0.005)    GRANULARITY 1,
+    INDEX idx_block_hash        (block_hash)        TYPE bloom_filter           GRANULARITY 1,
+    INDEX idx_tx_hash           (tx_hash)           TYPE bloom_filter           GRANULARITY 1,
+    INDEX idx_tx_from           (tx_from)           TYPE bloom_filter           GRANULARITY 1,
+    INDEX idx_tx_to             (tx_to)             TYPE bloom_filter           GRANULARITY 1,
     INDEX idx_tx_value          (tx_value)          TYPE minmax                 GRANULARITY 1,
     INDEX idx_tx_nonce          (tx_nonce)          TYPE minmax                 GRANULARITY 1,
     INDEX idx_tx_gas_price      (tx_gas_price)      TYPE minmax                 GRANULARITY 1,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     INDEX idx_log_index         (log_index)         TYPE minmax                 GRANULARITY 1,
 
     -- indexes (log) --
-    INDEX idx_log_address       (log_address)           TYPE bloom_filter(0.005)    GRANULARITY 1,
+    INDEX idx_log_address       (log_address)           TYPE bloom_filter           GRANULARITY 1,
     INDEX idx_log_ordinal       (log_ordinal)           TYPE minmax                 GRANULARITY 1
 )
 ENGINE = ReplacingMergeTree

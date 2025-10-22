@@ -20,7 +20,7 @@ ALTER TABLE sunswap_swap
 
     -- indexes --
     ADD INDEX IF NOT EXISTS idx_sender (sender) TYPE bloom_filter GRANULARITY 1,
-    ADD INDEX IF NOT EXISTS idx_to (to) TYPE bloom_filter GRANULARITY 1,
+    ADD INDEX IF NOT EXISTS idx_to (`to`) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_pair (pair) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token0 (token0) TYPE bloom_filter GRANULARITY 1,
@@ -35,13 +35,15 @@ CREATE TABLE IF NOT EXISTS sunswap_pair_created AS TEMPLATE_LOG
 COMMENT 'SunSwap V2 PairCreated events';
 ALTER TABLE sunswap_pair_created
     -- PairCreated event information --
+    ADD COLUMN IF NOT EXISTS factory          String COMMENT 'Factory contract address',
+    ADD COLUMN IF NOT EXISTS pair             String COMMENT 'Pair contract address',
     ADD COLUMN IF NOT EXISTS token0           String COMMENT 'Token0 contract address',
     ADD COLUMN IF NOT EXISTS token1           String COMMENT 'Token1 contract address',
-    ADD COLUMN IF NOT EXISTS pair             String COMMENT 'Pair contract address',
 
     -- indexes --
+    ADD INDEX IF NOT EXISTS idx_pair (pair) TYPE bloom_filter GRANULARITY 1,
+    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token0 (token0) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token1 (token1) TYPE bloom_filter GRANULARITY 1,
-    ADD INDEX IF NOT EXISTS idx_pair (pair) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token_pair (token0, token1) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token_pair_inv (token1, token0) TYPE bloom_filter GRANULARITY 1;
