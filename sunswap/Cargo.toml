@@ -15,6 +15,3 @@ substreams-abis = { workspace = true }
 proto = { path = "../proto" }
 prost = { workspace = true }
 prost-types = { workspace = true }
-
-[build-dependencies]
-prost-build = { workspace = true }

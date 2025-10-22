@@ -506,7 +506,6 @@ name = "justswap"
 version = "0.0.0"
 dependencies = [
  "prost 0.13.5",
- "prost-build 0.13.5",
  "proto",
  "substreams",
  "substreams-abis",
@@ -1286,7 +1285,6 @@ name = "sunpump"
 version = "0.0.0"
 dependencies = [
  "prost 0.13.5",
- "prost-build 0.13.5",
  "proto",
  "substreams",
  "substreams-abis",
@@ -1298,7 +1296,6 @@ name = "sunswap"
 version = "0.0.0"
 dependencies = [
  "prost 0.13.5",
- "prost-build 0.13.5",
  "prost-types 0.13.5",
  "proto",
  "substreams",
@@ -1457,12 +1454,9 @@ name = "tron-foundational-store"
 version = "0.0.0"
 dependencies = [
  "prost 0.13.5",
- "prost-build 0.13.5",
  "prost-types 0.13.5",
  "proto",
  "substreams",
- "substreams-database-change",
- "substreams-ethereum",
 ]
 
 [[package]]

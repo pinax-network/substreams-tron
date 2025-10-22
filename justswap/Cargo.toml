@@ -14,6 +14,3 @@ substreams-ethereum = { workspace = true }
 substreams-abis = { workspace = true }
 proto = { path = "../proto" }
 prost = { workspace = true }
-
-[build-dependencies]
-prost-build = { workspace = true }

@@ -30,7 +30,6 @@ substreams-ethereum = "0.10.6"
 substreams-database-change = "2.1.2"
 prost = "0.13"
 prost-types = "0.13"
-prost-build = "0.13"
 
 [profile.release]
 lto = true
