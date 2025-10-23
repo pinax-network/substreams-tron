@@ -2,8 +2,7 @@ use common::tron_base58_from_bytes;
 use proto::pb::tron::foundational_store::v1::PairCreated;
 use proto::pb::tron::sunswap;
 use substreams::pb::substreams::Clock;
-use substreams::store::{StoreGet, StoreGetProto};
-use substreams::Hex;
+use substreams::store::FoundationalStore;
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -13,7 +12,7 @@ use crate::{
 };
 
 // SunSwap Processing
-pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::Events, store: &StoreGetProto<PairCreated>) {
+pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::Events, store: &FoundationalStore) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
@@ -38,6 +37,19 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::
     }
 }
 
+pub fn get_pair_created(store: &FoundationalStore, address: &Vec<u8>) -> Option<PairCreated> {
+    let pair_created = store.get(address.to_vec());
+    if let Some(value) = &pair_created.value {
+        if value.type_url == "type.googleapis.com/tron.foundational_store.v1.PairCreated" {
+            if let Ok(decoded) = prost::Message::decode(value.value.as_slice()) {
+                let pair: PairCreated = decoded;
+                return Some(pair);
+            }
+        }
+    }
+    None
+}
+
 pub fn set_pair_created(value: PairCreated, row: &mut substreams_database_change::tables::Row) {
     row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
     row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
@@ -45,7 +57,7 @@ pub fn set_pair_created(value: PairCreated, row: &mut substreams_database_change
 }
 
 fn process_sunswap_swap(
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -55,7 +67,7 @@ fn process_sunswap_swap(
     event: &sunswap::v1::Swap,
 ) {
     // Lookup PairCreated once, exit early if not found
-    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
+    let Some(pair_created) = get_pair_created(store, &log.address) else {
         substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
@@ -104,7 +116,7 @@ fn process_sunswap_pair_created(
 }
 
 fn process_sunswap_mint(
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -114,7 +126,7 @@ fn process_sunswap_mint(
     event: &sunswap::v1::Mint,
 ) {
     // Lookup PairCreated once, exit early if not found
-    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
+    let Some(pair_created) = get_pair_created(store, &log.address) else {
         substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
@@ -137,7 +149,7 @@ fn process_sunswap_mint(
 }
 
 fn process_sunswap_burn(
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -147,7 +159,7 @@ fn process_sunswap_burn(
     event: &sunswap::v1::Burn,
 ) {
     // Lookup PairCreated once, exit early if not found
-    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
+    let Some(pair_created) = get_pair_created(store, &log.address) else {
         substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
@@ -171,7 +183,7 @@ fn process_sunswap_burn(
 }
 
 fn process_sunswap_sync(
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -181,7 +193,7 @@ fn process_sunswap_sync(
     event: &sunswap::v1::Sync,
 ) {
     // Lookup PairCreated once, exit early if not found
-    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
+    let Some(pair_created) = get_pair_created(store, &log.address) else {
         substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };

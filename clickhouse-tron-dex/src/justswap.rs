@@ -1,7 +1,7 @@
 use common::tron_base58_from_bytes;
 use proto::pb::tron::{foundational_store::v1::NewExchange, justswap};
-use substreams::store::{StoreGet, StoreGetProto};
-use substreams::{pb::substreams::Clock, Hex};
+use substreams::pb::substreams::Clock;
+use substreams::store::FoundationalStore;
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
 };
 
 // JustSwap Processing
-pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1::Events, store: &StoreGetProto<NewExchange>) {
+pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1::Events, store: &FoundationalStore) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
@@ -39,13 +39,26 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1:
     }
 }
 
+pub fn get_new_exchange(store: &FoundationalStore, address: &Vec<u8>) -> Option<NewExchange> {
+    let new_exchange = store.get(address.to_vec());
+    if let Some(value) = &new_exchange.value {
+        if value.type_url == "type.googleapis.com/tron.foundational_store.v1.NewExchange" {
+            if let Ok(decoded) = prost::Message::decode(value.value.as_slice()) {
+                let exchange: NewExchange = decoded;
+                return Some(exchange);
+            }
+        }
+    }
+    None
+}
+
 pub fn set_new_exchange(value: NewExchange, row: &mut substreams_database_change::tables::Row) {
     row.set("token", tron_base58_from_bytes(&value.token).unwrap());
     row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
 }
 
 fn process_justswap_token_purchase(
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -55,8 +68,8 @@ fn process_justswap_token_purchase(
     swap: &justswap::v1::TokenPurchase,
 ) {
     // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
-        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
+        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
 
@@ -79,7 +92,7 @@ fn process_justswap_token_purchase(
 }
 
 fn process_justswap_trx_purchase(
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -89,10 +102,12 @@ fn process_justswap_trx_purchase(
     swap: &justswap::v1::TrxPurchase,
 ) {
     // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
-        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
+        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
+
+    // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_trx_purchase", key);
 
@@ -113,7 +128,7 @@ fn process_justswap_trx_purchase(
 }
 
 fn process_justswap_add_liquidity(
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -123,11 +138,12 @@ fn process_justswap_add_liquidity(
     event: &justswap::v1::AddLiquidity,
 ) {
     // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
-        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
+        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
 
+    // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_add_liquidity", key);
 
@@ -146,7 +162,7 @@ fn process_justswap_add_liquidity(
 }
 
 fn process_justswap_remove_liquidity(
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -156,11 +172,12 @@ fn process_justswap_remove_liquidity(
     event: &justswap::v1::RemoveLiquidity,
 ) {
     // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
-        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
+        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
 
+    // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_remove_liquidity", key);
 
@@ -179,7 +196,7 @@ fn process_justswap_remove_liquidity(
 }
 
 fn process_justswap_snapshot(
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -189,11 +206,12 @@ fn process_justswap_snapshot(
     event: &justswap::v1::Snapshot,
 ) {
     // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
-        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
+        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
 
+    // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_snapshot", key);
 

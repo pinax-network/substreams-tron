@@ -2,15 +2,12 @@ mod justswap;
 mod logs;
 mod sunpump;
 mod sunswap;
-// mod sunswap_foundational_store;
 mod transactions;
 
 use proto::pb::tron as pb;
-use proto::pb::tron::foundational_store::v1::{NewExchange, PairCreated};
 use substreams::errors::Error;
 use substreams::pb::substreams::Clock;
 use substreams::prelude::*;
-use substreams::store::StoreGetProto;
 use substreams_database_change::pb::database::DatabaseChanges;
 
 #[substreams::handlers::map]
@@ -19,17 +16,15 @@ pub fn db_out(
     justswap: pb::justswap::v1::Events,
     sunswap: pb::sunswap::v1::Events,
     sunpump: pb::sunpump::v1::Events,
-    // store: FoundationalStore,
-    store_pair_created: StoreGetProto<PairCreated>,
-    store_new_exchange: StoreGetProto<NewExchange>,
+    store: FoundationalStore,
 ) -> Result<DatabaseChanges, Error> {
     let mut tables = substreams_database_change::tables::Tables::new();
 
     // Process JustSwap events
-    justswap::process_events(&mut tables, &clock, &justswap, &store_new_exchange);
+    justswap::process_events(&mut tables, &clock, &justswap, &store);
 
     // Process SunSwap events
-    sunswap::process_events(&mut tables, &clock, &sunswap, &store_pair_created);
+    sunswap::process_events(&mut tables, &clock, &sunswap, &store);
 
     // Process SunPump events
     sunpump::process_events(&mut tables, &clock, &sunpump);
