@@ -16,11 +16,23 @@ use crate::{
 pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::Events, store: &StoreGetProto<PairCreated>) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
-            if let Some(sunswap::v1::log::Log::Swap(swap)) = &log.log {
-                process_sunswap_swap(store, tables, clock, tx, log, tx_index, log_index, swap);
-            }
-            if let Some(sunswap::v1::log::Log::PairCreated(pair_created)) = &log.log {
-                process_sunswap_pair_created(tables, clock, tx, log, tx_index, log_index, pair_created);
+            match &log.log {
+                Some(sunswap::v1::log::Log::Swap(swap)) => {
+                    process_sunswap_swap(store, tables, clock, tx, log, tx_index, log_index, swap);
+                }
+                Some(sunswap::v1::log::Log::PairCreated(pair_created)) => {
+                    process_sunswap_pair_created(tables, clock, tx, log, tx_index, log_index, pair_created);
+                }
+                Some(sunswap::v1::log::Log::Mint(event)) => {
+                    process_sunswap_mint(tables, clock, tx, log, tx_index, log_index, event);
+                }
+                Some(sunswap::v1::log::Log::Burn(event)) => {
+                    process_sunswap_burn(tables, clock, tx, log, tx_index, log_index, event);
+                }
+                Some(sunswap::v1::log::Log::Sync(event)) => {
+                    process_sunswap_sync(tables, clock, tx, log, tx_index, log_index, event);
+                }
+                _ => {} // Ignore other event types
             }
         }
     }
@@ -101,4 +113,73 @@ fn process_sunswap_pair_created(
     row.set("token0", tron_base58_from_bytes(&event.token0).unwrap());
     row.set("token1", tron_base58_from_bytes(&event.token1).unwrap());
     row.set("pair", tron_base58_from_bytes(&event.pair).unwrap());
+}
+
+fn process_sunswap_mint(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &sunswap::v1::Transaction,
+    log: &sunswap::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &sunswap::v1::Mint,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("sunswap_mint", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("sender", tron_base58_from_bytes(&event.sender).unwrap());
+    row.set("amount0", &event.amount0);
+    row.set("amount1", &event.amount1);
+}
+
+fn process_sunswap_burn(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &sunswap::v1::Transaction,
+    log: &sunswap::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &sunswap::v1::Burn,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("sunswap_burn", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("sender", tron_base58_from_bytes(&event.sender).unwrap());
+    row.set("amount0", &event.amount0);
+    row.set("amount1", &event.amount1);
+    row.set("to", tron_base58_from_bytes(&event.to).unwrap());
+}
+
+fn process_sunswap_sync(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &sunswap::v1::Transaction,
+    log: &sunswap::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &sunswap::v1::Sync,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("sunswap_sync", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("reserve0", &event.reserve0);
+    row.set("reserve1", &event.reserve1);
 }

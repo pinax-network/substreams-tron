@@ -20,6 +20,18 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1:
                 Some(justswap::v1::log::Log::TrxPurchase(swap)) => {
                     process_justswap_trx_purchase(tables, clock, tx, log, tx_index, log_index, swap);
                 }
+                Some(justswap::v1::log::Log::AddLiquidity(event)) => {
+                    process_justswap_add_liquidity(tables, clock, tx, log, tx_index, log_index, event);
+                }
+                Some(justswap::v1::log::Log::RemoveLiquidity(event)) => {
+                    process_justswap_remove_liquidity(tables, clock, tx, log, tx_index, log_index, event);
+                }
+                Some(justswap::v1::log::Log::Snapshot(event)) => {
+                    process_justswap_snapshot(tables, clock, tx, log, tx_index, log_index, event);
+                }
+                Some(justswap::v1::log::Log::NewExchange(event)) => {
+                    process_justswap_new_exchange(tables, clock, tx, log, tx_index, log_index, event);
+                }
                 _ => {} // Ignore other event types
             }
         }
@@ -72,4 +84,95 @@ fn process_justswap_trx_purchase(
     // Token is input, TRX is output
     row.set("tokens_sold", &swap.tokens_sold);
     row.set("trx_bought", &swap.trx_bought);
+}
+
+fn process_justswap_add_liquidity(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &justswap::v1::Transaction,
+    log: &justswap::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &justswap::v1::AddLiquidity,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("justswap_add_liquidity", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("provider", tron_base58_from_bytes(&event.provider).unwrap());
+    row.set("trx_amount", &event.trx_amount);
+    row.set("token_amount", &event.token_amount);
+}
+
+fn process_justswap_remove_liquidity(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &justswap::v1::Transaction,
+    log: &justswap::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &justswap::v1::RemoveLiquidity,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("justswap_remove_liquidity", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("provider", tron_base58_from_bytes(&event.provider).unwrap());
+    row.set("trx_amount", &event.trx_amount);
+    row.set("token_amount", &event.token_amount);
+}
+
+fn process_justswap_snapshot(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &justswap::v1::Transaction,
+    log: &justswap::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &justswap::v1::Snapshot,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("justswap_snapshot", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("operator", tron_base58_from_bytes(&event.operator).unwrap());
+    row.set("trx_balance", &event.trx_balance);
+    row.set("token_balance", &event.token_balance);
+}
+
+fn process_justswap_new_exchange(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &justswap::v1::Transaction,
+    log: &justswap::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &justswap::v1::NewExchange,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("justswap_new_exchange", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("exchange", tron_base58_from_bytes(&event.exchange).unwrap());
+    row.set("token", tron_base58_from_bytes(&event.token).unwrap());
 }
