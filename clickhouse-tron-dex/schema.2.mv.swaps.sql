@@ -61,3 +61,118 @@ SELECT
     if (amount0_in > toUInt256(0), amount1_out, amount0_out) AS output_amount
 
 FROM sunswap_swap;
+
+
+-- JustSwap TokenPurchase: User buys tokens with TRX (TRX → Token)
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_justswap_token_purchase
+TO swaps AS
+SELECT
+    -- include everything from justswap_token_purchase except the non-relevant fields
+    * EXCEPT (
+        buyer,
+        trx_sold,
+        tokens_bought,
+        token
+    ),
+
+    -- mapped swap fields
+    log_address                        AS pool,
+    buyer                              AS user,
+
+    -- Input side: TRX being sold
+    -- TODO: Replace '' with the official TRX native asset identifier once determined
+    ''                                 AS input_contract,  -- TRX native asset
+    trx_sold                           AS input_amount,
+
+    -- Output side: Tokens being bought
+    token                              AS output_contract,
+    tokens_bought                      AS output_amount
+
+FROM justswap_token_purchase;
+
+
+-- JustSwap TrxPurchase: User buys TRX with tokens (Token → TRX)
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_justswap_trx_purchase
+TO swaps AS
+SELECT
+    -- include everything from justswap_trx_purchase except the non-relevant fields
+    * EXCEPT (
+        buyer,
+        tokens_sold,
+        trx_bought,
+        token
+    ),
+
+    -- mapped swap fields
+    log_address                        AS pool,
+    buyer                              AS user,
+
+    -- Input side: Tokens being sold
+    token                              AS input_contract,
+    tokens_sold                        AS input_amount,
+
+    -- Output side: TRX being bought
+    -- TODO: Replace '' with the official TRX native asset identifier once determined
+    ''                                 AS output_contract,  -- TRX native asset
+    trx_bought                         AS output_amount
+
+FROM justswap_trx_purchase;
+
+
+-- SunPump TokenPurchased: User buys tokens with TRX (TRX → Token)
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_sunpump_token_purchased
+TO swaps AS
+SELECT
+    -- include everything from sunpump_token_purchased except the non-relevant fields
+    * EXCEPT (
+        buyer,
+        trx_amount,
+        token,
+        token_amount,
+        fee,
+        token_reserve
+    ),
+
+    -- mapped swap fields
+    log_address                        AS pool,
+    buyer                              AS user,
+
+    -- Input side: TRX being paid
+    -- TODO: Replace '' with the official TRX native asset identifier once determined
+    ''                                 AS input_contract,  -- TRX native asset
+    trx_amount                         AS input_amount,
+
+    -- Output side: Tokens being purchased
+    token                              AS output_contract,
+    token_amount                       AS output_amount
+
+FROM sunpump_token_purchased;
+
+
+-- SunPump TokenSold: User sells tokens for TRX (Token → TRX)
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_sunpump_token_sold
+TO swaps AS
+SELECT
+    -- include everything from sunpump_token_sold except the non-relevant fields
+    * EXCEPT (
+        seller,
+        token,
+        token_amount,
+        trx_amount,
+        fee
+    ),
+
+    -- mapped swap fields
+    log_address                        AS pool,
+    seller                             AS user,
+
+    -- Input side: Tokens being sold
+    token                              AS input_contract,
+    token_amount                       AS input_amount,
+
+    -- Output side: TRX being received
+    -- TODO: Replace '' with the official TRX native asset identifier once determined
+    ''                                 AS output_contract,  -- TRX native asset
+    trx_amount                         AS output_amount
+
+FROM sunpump_token_sold;
