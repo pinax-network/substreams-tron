@@ -80,8 +80,7 @@ SELECT
     buyer                              AS user,
 
     -- Input side: TRX being sold
-    -- TODO: Replace '' with the official TRX native asset identifier once determined
-    ''                                 AS input_contract,  -- TRX native asset
+    'T0000000000000000000000000000000000000001'                                 AS input_contract,  -- TRX native asset
     trx_sold                           AS input_amount,
 
     -- Output side: Tokens being bought
@@ -112,8 +111,7 @@ SELECT
     tokens_sold                        AS input_amount,
 
     -- Output side: TRX being bought
-    -- TODO: Replace '' with the official TRX native asset identifier once determined
-    ''                                 AS output_contract,  -- TRX native asset
+    'T0000000000000000000000000000000000000001'                                 AS output_contract,  -- TRX native asset
     trx_bought                         AS output_amount
 
 FROM justswap_trx_purchase;
@@ -138,8 +136,7 @@ SELECT
     buyer                              AS user,
 
     -- Input side: TRX being paid
-    -- TODO: Replace '' with the official TRX native asset identifier once determined
-    ''                                 AS input_contract,  -- TRX native asset
+    'T0000000000000000000000000000000000000001'                                 AS input_contract,  -- TRX native asset
     trx_amount                         AS input_amount,
 
     -- Output side: Tokens being purchased
@@ -171,8 +168,7 @@ SELECT
     token_amount                       AS input_amount,
 
     -- Output side: TRX being received
-    -- TODO: Replace '' with the official TRX native asset identifier once determined
-    ''                                 AS output_contract,  -- TRX native asset
+    'T0000000000000000000000000000000000000001'                                 AS output_contract,  -- TRX native asset
     trx_amount                         AS output_amount
 
 FROM sunpump_token_sold;
