@@ -20,7 +20,17 @@ ALTER TABLE swaps
     ADD INDEX IF NOT EXISTS idx_input_amount      (input_amount)      TYPE minmax          GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_output_amount     (output_amount)     TYPE minmax          GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_contract_pair     (input_contract, output_contract)       TYPE bloom_filter GRANULARITY 1,
-    ADD INDEX IF NOT EXISTS idx_contract_pair_inv (output_contract, input_contract)       TYPE bloom_filter GRANULARITY 1;
+    ADD INDEX IF NOT EXISTS idx_contract_pair_inv (output_contract, input_contract)       TYPE bloom_filter GRANULARITY 1,
+
+    -- projections --
+    ADD PROJECTION IF NOT EXISTS prj_factory (SELECT factory, timestamp, _part_offset ORDER BY (factory, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_pool (SELECT pool, timestamp, _part_offset ORDER BY (pool, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_user (SELECT user, timestamp, _part_offset ORDER BY (user, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_input_contract (SELECT input_contract, timestamp, _part_offset ORDER BY (input_contract, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_output_contract (SELECT output_contract, timestamp, _part_offset ORDER BY (output_contract, timestamp))
+    ADD PROJECTION IF NOT EXISTS prj_contract_pair (SELECT input_contract, output_contract, timestamp, _part_offset ORDER BY (input_contract, output_contract, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_contract_pair_inv (SELECT output_contract, input_contract, timestamp, _part_offset ORDER BY (output_contract, input_contract, timestamp));
+
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_sunswap_swap
 TO swaps AS

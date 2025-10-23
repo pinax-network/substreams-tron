@@ -46,3 +46,12 @@ ORDER BY (
     timestamp, block_num,
     block_hash, tx_index, log_index
 );
+
+ALTER TABLE TEMPLATE_LOG
+  MODIFY SETTING deduplicate_merge_projection_mode = 'rebuild';
+
+ALTER TABLE TEMPLATE_LOG
+    ADD PROJECTION IF NOT EXISTS prj_tx_hash (SELECT tx_hash, timestamp, _part_offset ORDER BY (tx_hash, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_tx_from (SELECT tx_from, timestamp, _part_offset ORDER BY (tx_from, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_tx_to (SELECT tx_to, timestamp, _part_offset ORDER BY (tx_to, timestamp)),
+    ADD PROJECTION IF NOT EXISTS prj_log_address (SELECT log_address, timestamp, _part_offset ORDER BY (log_address, timestamp));
