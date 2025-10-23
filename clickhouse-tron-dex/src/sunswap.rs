@@ -24,18 +24,24 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::
                     process_sunswap_pair_created(tables, clock, tx, log, tx_index, log_index, pair_created);
                 }
                 Some(sunswap::v1::log::Log::Mint(event)) => {
-                    process_sunswap_mint(tables, clock, tx, log, tx_index, log_index, event);
+                    process_sunswap_mint(store, tables, clock, tx, log, tx_index, log_index, event);
                 }
                 Some(sunswap::v1::log::Log::Burn(event)) => {
-                    process_sunswap_burn(tables, clock, tx, log, tx_index, log_index, event);
+                    process_sunswap_burn(store, tables, clock, tx, log, tx_index, log_index, event);
                 }
                 Some(sunswap::v1::log::Log::Sync(event)) => {
-                    process_sunswap_sync(tables, clock, tx, log, tx_index, log_index, event);
+                    process_sunswap_sync(store, tables, clock, tx, log, tx_index, log_index, event);
                 }
                 _ => {} // Ignore other event types
             }
         }
     }
+}
+
+pub fn set_pair_created(value: PairCreated, row: &mut substreams_database_change::tables::Row) {
+    row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
+    row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
+    row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
 }
 
 fn process_sunswap_swap(
@@ -48,12 +54,11 @@ fn process_sunswap_swap(
     log_index: usize,
     event: &sunswap::v1::Swap,
 ) {
-    // Swap must have a corresponding PairCreated event
-    let pair_created = store.get_first(Hex::encode(log.address.to_vec()));
-    if pair_created.is_none() {
+    // Lookup PairCreated once, exit early if not found
+    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
         substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
-    }
+    };
 
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("sunswap_swap", key);
@@ -63,27 +68,10 @@ fn process_sunswap_swap(
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
 
-    // Get PairCreated
-    if let Some(value) = &pair_created {
-        row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
-        row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
-        row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
-        substreams::log::info!(
-            "PairCreated found for address: {}, token0: {}, token1: {}",
-            tron_base58_from_bytes(&log.address).unwrap(),
-            tron_base58_from_bytes(&value.token0).unwrap(),
-            tron_base58_from_bytes(&value.token1).unwrap()
-        );
-    } else {
-        row.set("token0", "");
-        row.set("token1", "");
-        row.set("factory", "");
-        substreams::log::info!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        panic!("PairCreated not found for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-    }
+    // Set PairCreated event data
+    set_pair_created(pair_created, row);
 
     // Swap info
-    row.set("pair", tron_base58_from_bytes(&log.address).unwrap());
     row.set("sender", tron_base58_from_bytes(&event.sender).unwrap());
     row.set("to", tron_base58_from_bytes(&event.to).unwrap());
     row.set("amount0_in", &event.amount0_in);
@@ -116,6 +104,7 @@ fn process_sunswap_pair_created(
 }
 
 fn process_sunswap_mint(
+    store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -124,6 +113,12 @@ fn process_sunswap_mint(
     log_index: usize,
     event: &sunswap::v1::Mint,
 ) {
+    // Lookup PairCreated once, exit early if not found
+    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
+        return;
+    };
+
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("sunswap_mint", key);
 
@@ -132,6 +127,9 @@ fn process_sunswap_mint(
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
 
+    // Set PairCreated event data
+    set_pair_created(pair_created, row);
+
     // Event info
     row.set("sender", tron_base58_from_bytes(&event.sender).unwrap());
     row.set("amount0", &event.amount0);
@@ -139,6 +137,7 @@ fn process_sunswap_mint(
 }
 
 fn process_sunswap_burn(
+    store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -147,6 +146,12 @@ fn process_sunswap_burn(
     log_index: usize,
     event: &sunswap::v1::Burn,
 ) {
+    // Lookup PairCreated once, exit early if not found
+    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
+        return;
+    };
+
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("sunswap_burn", key);
 
@@ -154,6 +159,9 @@ fn process_sunswap_burn(
     set_clock(clock, row);
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
+
+    // Set PairCreated event data
+    set_pair_created(pair_created, row);
 
     // Event info
     row.set("sender", tron_base58_from_bytes(&event.sender).unwrap());
@@ -163,6 +171,7 @@ fn process_sunswap_burn(
 }
 
 fn process_sunswap_sync(
+    store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -171,6 +180,12 @@ fn process_sunswap_sync(
     log_index: usize,
     event: &sunswap::v1::Sync,
 ) {
+    // Lookup PairCreated once, exit early if not found
+    let Some(pair_created) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
+        return;
+    };
+
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("sunswap_sync", key);
 
@@ -178,6 +193,9 @@ fn process_sunswap_sync(
     set_clock(clock, row);
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
+
+    // Set PairCreated event data
+    set_pair_created(pair_created, row);
 
     // Event info
     row.set("reserve0", &event.reserve0);

@@ -1,6 +1,7 @@
 use common::tron_base58_from_bytes;
-use proto::pb::tron::justswap;
-use substreams::pb::substreams::Clock;
+use proto::pb::tron::{foundational_store::v1::NewExchange, justswap};
+use substreams::store::{StoreGet, StoreGetProto};
+use substreams::{pb::substreams::Clock, Hex};
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -10,24 +11,24 @@ use crate::{
 };
 
 // JustSwap Processing
-pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1::Events) {
+pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1::Events, store: &StoreGetProto<NewExchange>) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
                 Some(justswap::v1::log::Log::TokenPurchase(swap)) => {
-                    process_justswap_token_purchase(tables, clock, tx, log, tx_index, log_index, swap);
+                    process_justswap_token_purchase(store, tables, clock, tx, log, tx_index, log_index, swap);
                 }
                 Some(justswap::v1::log::Log::TrxPurchase(swap)) => {
-                    process_justswap_trx_purchase(tables, clock, tx, log, tx_index, log_index, swap);
+                    process_justswap_trx_purchase(store, tables, clock, tx, log, tx_index, log_index, swap);
                 }
                 Some(justswap::v1::log::Log::AddLiquidity(event)) => {
-                    process_justswap_add_liquidity(tables, clock, tx, log, tx_index, log_index, event);
+                    process_justswap_add_liquidity(store, tables, clock, tx, log, tx_index, log_index, event);
                 }
                 Some(justswap::v1::log::Log::RemoveLiquidity(event)) => {
-                    process_justswap_remove_liquidity(tables, clock, tx, log, tx_index, log_index, event);
+                    process_justswap_remove_liquidity(store, tables, clock, tx, log, tx_index, log_index, event);
                 }
                 Some(justswap::v1::log::Log::Snapshot(event)) => {
-                    process_justswap_snapshot(tables, clock, tx, log, tx_index, log_index, event);
+                    process_justswap_snapshot(store, tables, clock, tx, log, tx_index, log_index, event);
                 }
                 Some(justswap::v1::log::Log::NewExchange(event)) => {
                     process_justswap_new_exchange(tables, clock, tx, log, tx_index, log_index, event);
@@ -38,7 +39,13 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1:
     }
 }
 
+pub fn set_new_exchange(value: NewExchange, row: &mut substreams_database_change::tables::Row) {
+    row.set("token", tron_base58_from_bytes(&value.token).unwrap());
+    row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
+}
+
 fn process_justswap_token_purchase(
+    store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -47,6 +54,13 @@ fn process_justswap_token_purchase(
     log_index: usize,
     swap: &justswap::v1::TokenPurchase,
 ) {
+    // Lookup NewExchange once, exit early if not found
+    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+        return;
+    };
+
+    // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_token_purchase", key);
 
@@ -55,6 +69,9 @@ fn process_justswap_token_purchase(
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
 
+    // Set NewExchange event data
+    set_new_exchange(new_exchange, row);
+
     // Swap info - TRX -> Token
     row.set("buyer", tron_base58_from_bytes(&swap.buyer).unwrap());
     row.set("trx_sold", &swap.trx_sold);
@@ -62,6 +79,7 @@ fn process_justswap_token_purchase(
 }
 
 fn process_justswap_trx_purchase(
+    store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -70,6 +88,11 @@ fn process_justswap_trx_purchase(
     log_index: usize,
     swap: &justswap::v1::TrxPurchase,
 ) {
+    // Lookup NewExchange once, exit early if not found
+    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+        return;
+    };
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_trx_purchase", key);
 
@@ -77,6 +100,9 @@ fn process_justswap_trx_purchase(
     set_clock(clock, row);
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
+
+    // Set NewExchange event data
+    set_new_exchange(new_exchange, row);
 
     // Swap info - Token -> TRX
     row.set("buyer", tron_base58_from_bytes(&swap.buyer).unwrap());
@@ -87,6 +113,7 @@ fn process_justswap_trx_purchase(
 }
 
 fn process_justswap_add_liquidity(
+    store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -95,6 +122,12 @@ fn process_justswap_add_liquidity(
     log_index: usize,
     event: &justswap::v1::AddLiquidity,
 ) {
+    // Lookup NewExchange once, exit early if not found
+    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+        return;
+    };
+
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_add_liquidity", key);
 
@@ -103,6 +136,9 @@ fn process_justswap_add_liquidity(
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
 
+    // Set NewExchange event data
+    set_new_exchange(new_exchange, row);
+
     // Event info
     row.set("provider", tron_base58_from_bytes(&event.provider).unwrap());
     row.set("trx_amount", &event.trx_amount);
@@ -110,6 +146,7 @@ fn process_justswap_add_liquidity(
 }
 
 fn process_justswap_remove_liquidity(
+    store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -118,6 +155,12 @@ fn process_justswap_remove_liquidity(
     log_index: usize,
     event: &justswap::v1::RemoveLiquidity,
 ) {
+    // Lookup NewExchange once, exit early if not found
+    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+        return;
+    };
+
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_remove_liquidity", key);
 
@@ -126,6 +169,9 @@ fn process_justswap_remove_liquidity(
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
 
+    // Set NewExchange event data
+    set_new_exchange(new_exchange, row);
+
     // Event info
     row.set("provider", tron_base58_from_bytes(&event.provider).unwrap());
     row.set("trx_amount", &event.trx_amount);
@@ -133,6 +179,7 @@ fn process_justswap_remove_liquidity(
 }
 
 fn process_justswap_snapshot(
+    store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -141,6 +188,12 @@ fn process_justswap_snapshot(
     log_index: usize,
     event: &justswap::v1::Snapshot,
 ) {
+    // Lookup NewExchange once, exit early if not found
+    let Some(new_exchange) = store.get_first(Hex::encode(&log.address)) else {
+        substreams::log::info!("NewExchange not found in store for address: {address_b58}");
+        return;
+    };
+
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_snapshot", key);
 
@@ -148,6 +201,9 @@ fn process_justswap_snapshot(
     set_clock(clock, row);
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
+
+    // Set NewExchange event data
+    set_new_exchange(new_exchange, row);
 
     // Event info
     row.set("operator", tron_base58_from_bytes(&event.operator).unwrap());
