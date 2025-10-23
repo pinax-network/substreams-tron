@@ -37,7 +37,7 @@ pub struct Log {
     pub address: ::prost::alloc::vec::Vec<u8>,
     #[prost(uint64, tag="2")]
     pub ordinal: u64,
-    #[prost(oneof="log::Log", tags="10, 11, 12, 13, 14")]
+    #[prost(oneof="log::Log", tags="10, 11, 12, 13, 14, 15")]
     pub log: ::core::option::Option<log::Log>,
 }
 /// Nested message and enum types in `Log`.
@@ -55,6 +55,8 @@ pub mod log {
         RemoveLiquidity(super::RemoveLiquidity),
         #[prost(message, tag="14")]
         Snapshot(super::Snapshot),
+        #[prost(message, tag="15")]
+        NewExchange(super::NewExchange),
     }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -116,5 +118,13 @@ pub struct Snapshot {
     /// uint256
     #[prost(string, tag="3")]
     pub token_balance: ::prost::alloc::string::String,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct NewExchange {
+    #[prost(bytes="vec", tag="1")]
+    pub exchange: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="vec", tag="2")]
+    pub token: ::prost::alloc::vec::Vec<u8>,
 }
 // @@protoc_insertion_point(module)

@@ -25,6 +25,7 @@ message Log {
     AddLiquidity add_liquidity = 12;
     RemoveLiquidity remove_liquidity = 13;
     Snapshot snapshot = 14;
+    NewExchange new_exchange = 15;
   }
 }
 
@@ -56,4 +57,9 @@ message Snapshot {
   bytes operator = 1;
   string trx_balance = 2;   // uint256
   string token_balance = 3; // uint256
+}
+
+message NewExchange {
+  bytes exchange = 1;
+  bytes token = 2;
 }

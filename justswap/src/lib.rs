@@ -1,5 +1,5 @@
 use proto::pb::tron::justswap::v1 as pb;
-use substreams_abis::tvm::justswap::v1::exchange::events;
+use substreams_abis::tvm::justswap;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
 
@@ -11,6 +11,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
     let mut total_add_liquidity = 0;
     let mut total_remove_liquidity = 0;
     let mut total_snapshot = 0;
+    let mut total_new_exchanges = 0;
 
     for trx in block.transactions() {
         let gas_price = trx.clone().gas_price.unwrap_or_default().with_decimal(0).to_string();
@@ -32,7 +33,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             let log = log_view.log;
 
             // TokenPurchase event
-            if let Some(event) = events::TokenPurchase::match_and_decode(log) {
+            if let Some(event) = justswap::v1::exchange::events::TokenPurchase::match_and_decode(log) {
                 total_token_purchases += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
@@ -46,7 +47,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             }
 
             // TrxPurchase event
-            if let Some(event) = events::TrxPurchase::match_and_decode(log) {
+            if let Some(event) = justswap::v1::exchange::events::TrxPurchase::match_and_decode(log) {
                 total_trx_purchases += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
@@ -60,7 +61,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             }
 
             // AddLiquidity event
-            if let Some(event) = events::AddLiquidity::match_and_decode(log) {
+            if let Some(event) = justswap::v1::exchange::events::AddLiquidity::match_and_decode(log) {
                 total_add_liquidity += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
@@ -74,7 +75,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             }
 
             // RemoveLiquidity event
-            if let Some(event) = events::RemoveLiquidity::match_and_decode(log) {
+            if let Some(event) = justswap::v1::exchange::events::RemoveLiquidity::match_and_decode(log) {
                 total_remove_liquidity += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
@@ -88,7 +89,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             }
 
             // Snapshot event
-            if let Some(event) = events::Snapshot::match_and_decode(log) {
+            if let Some(event) = justswap::v1::exchange::events::Snapshot::match_and_decode(log) {
                 total_snapshot += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
@@ -97,6 +98,19 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
                         operator: event.operator.to_vec(),
                         trx_balance: event.trx_balance.to_string(),
                         token_balance: event.token_balance.to_string(),
+                    })),
+                });
+            }
+
+            // NewExchange event
+            if let Some(event) = justswap::v1::factory::events::NewExchange::match_and_decode(log) {
+                total_new_exchanges += 1;
+                transaction.logs.push(pb::Log {
+                    address: log.address.to_vec(),
+                    ordinal: log.ordinal,
+                    log: Some(pb::log::Log::NewExchange(pb::NewExchange {
+                        exchange: event.exchange.to_vec(),
+                        token: event.token.to_vec(),
                     })),
                 });
             }
@@ -114,5 +128,6 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
     substreams::log::info!("Total AddLiquidity events: {}", total_add_liquidity);
     substreams::log::info!("Total RemoveLiquidity events: {}", total_remove_liquidity);
     substreams::log::info!("Total Snapshot events: {}", total_snapshot);
+    substreams::log::info!("Total NewExchange events: {}", total_new_exchanges);
     Ok(events)
 }

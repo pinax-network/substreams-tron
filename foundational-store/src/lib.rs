@@ -1,15 +1,16 @@
 use prost::Message;
 use prost_types::Any;
 use proto::pb::tron as pb;
-use proto::pb::tron::foundational_store::v1::PairCreated;
+use proto::pb::tron::foundational_store::v1::{NewExchange, PairCreated};
 use substreams::pb::sf::substreams::foundational_store::v1::{Entries, Entry};
 use substreams::store::StoreSetProto;
 use substreams::{prelude::*, Hex};
 
 const URL_PAIR_CREATED: &str = "type.googleapis.com/tron.foundational_store.v1.PairCreated";
+const URL_NEW_EXCHANGE: &str = "type.googleapis.com/tron.foundational_store.v1.NewExchange";
 
 #[substreams::handlers::map]
-pub fn foundational_store(sunswap: pb::sunswap::v1::Events) -> Result<Entries, substreams::errors::Error> {
+pub fn foundational_store(sunswap: pb::sunswap::v1::Events, justswap: pb::justswap::v1::Events) -> Result<Entries, substreams::errors::Error> {
     let mut entries = Vec::new();
 
     for trx in sunswap.transactions.iter() {
@@ -24,6 +25,22 @@ pub fn foundational_store(sunswap: pb::sunswap::v1::Events) -> Result<Entries, s
                 entries.push(Entry {
                     key: pair_created.pair.clone(),
                     value: Some(pack_any(&payload, URL_PAIR_CREATED)),
+                });
+            }
+        }
+    }
+
+    for trx in justswap.transactions.iter() {
+        for log in trx.logs.iter() {
+            // ---- NewExchange ----
+            if let Some(pb::justswap::v1::log::Log::NewExchange(new_exchange)) = &log.log {
+                let payload = NewExchange {
+                    factory: log.address.clone(),
+                    token: new_exchange.token.clone(),
+                };
+                entries.push(Entry {
+                    key: new_exchange.exchange.clone(),
+                    value: Some(pack_any(&payload, URL_NEW_EXCHANGE)),
                 });
             }
         }
@@ -44,6 +61,22 @@ pub fn store_pair_created(sunswap: pb::sunswap::v1::Events, store: StoreSetProto
                     token1: pair_created.token1.clone(),
                 };
                 store.set(log.ordinal, Hex::encode(&pair_created.pair), &payload);
+            }
+        }
+    }
+}
+
+#[substreams::handlers::store]
+pub fn store_new_exchange(justswap: pb::justswap::v1::Events, store: StoreSetProto<NewExchange>) {
+    for trx in justswap.transactions.iter() {
+        for log in trx.logs.iter() {
+            // ---- NewExchange ----
+            if let Some(pb::justswap::v1::log::Log::NewExchange(new_exchange)) = &log.log {
+                let payload = NewExchange {
+                    factory: log.address.clone(),
+                    token: new_exchange.token.clone(),
+                };
+                store.set(log.ordinal, Hex::encode(&new_exchange.exchange), &payload);
             }
         }
     }

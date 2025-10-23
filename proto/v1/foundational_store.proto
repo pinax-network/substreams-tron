@@ -2,9 +2,15 @@ syntax = "proto3";
 
 package tron.foundational_store.v1;
 
-// key = <pair bytes>
+// key = <bytes pair>
 message PairCreated {
   bytes factory = 1; // log.address - the factory that created the pair
   bytes token0 = 2;
   bytes token1 = 3;
+}
+
+// key = <bytes exchange>
+message NewExchange {
+  bytes factory = 1; // log.address - the factory that created the pair
+  bytes token = 2;
 }
