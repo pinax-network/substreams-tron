@@ -4,7 +4,7 @@ use substreams::{
     Hex,
 };
 
-pub fn get_new_exchange(store: &FoundationalStore, address: &Vec<u8>) -> Option<NewExchange> {
+pub fn _get_new_exchange(store: &FoundationalStore, address: &Vec<u8>) -> Option<NewExchange> {
     let new_exchange = store.get(address.to_vec());
     if let Some(value) = &new_exchange.value {
         substreams::log::info!("Found value with type_url: {}", value.type_url);
@@ -18,7 +18,7 @@ pub fn get_new_exchange(store: &FoundationalStore, address: &Vec<u8>) -> Option<
     None
 }
 
-pub fn get_pair_created(store: &FoundationalStore, address: &Vec<u8>) -> Option<PairCreated> {
+pub fn _get_pair_created(store: &FoundationalStore, address: &Vec<u8>) -> Option<PairCreated> {
     let pair_created = store.get(address.to_vec());
     if let Some(value) = &pair_created.value {
         substreams::log::info!("Found value with type_url: {}", value.type_url);
@@ -32,10 +32,10 @@ pub fn get_pair_created(store: &FoundationalStore, address: &Vec<u8>) -> Option<
     None
 }
 
-pub fn _get_new_exchange(store: &StoreGetProto<NewExchange>, address: &Vec<u8>) -> Option<NewExchange> {
+pub fn get_new_exchange(store: &StoreGetProto<NewExchange>, address: &Vec<u8>) -> Option<NewExchange> {
     store.get_first(Hex::encode(address))
 }
 
-pub fn _get_pair_created(store: &StoreGetProto<PairCreated>, address: &Vec<u8>) -> Option<PairCreated> {
+pub fn get_pair_created(store: &StoreGetProto<PairCreated>, address: &Vec<u8>) -> Option<PairCreated> {
     store.get_first(Hex::encode(address))
 }

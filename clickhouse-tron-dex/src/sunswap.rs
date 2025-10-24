@@ -1,8 +1,8 @@
 use common::tron_base58_from_bytes;
 use proto::pb::tron::foundational_store::v1::PairCreated;
 use proto::pb::tron::sunswap;
-use substreams::pb::substreams::Clock;
-use substreams::store::FoundationalStore;
+// use substreams::store::FoundationalStore;
+use substreams::{pb::substreams::Clock, store::StoreGetProto};
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -13,7 +13,13 @@ use crate::{
 };
 
 // SunSwap Processing
-pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::Events, store: &FoundationalStore) {
+pub fn process_events(
+    tables: &mut Tables,
+    clock: &Clock,
+    events: &sunswap::v1::Events,
+    store: &StoreGetProto<PairCreated>,
+    // store_foundational: &FoundationalStore,
+) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
@@ -58,8 +64,8 @@ pub fn set_pair_created(value: Option<PairCreated>, row: &mut substreams_databas
 }
 
 fn process_sunswap_swap(
-    store: &FoundationalStore,
-    // store: &StoreGetProto<PairCreated>,
+    // store: &FoundationalStore,
+    store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -112,8 +118,8 @@ fn process_sunswap_pair_created(
 }
 
 fn process_sunswap_mint(
-    store: &FoundationalStore,
-    // store: &StoreGetProto<PairCreated>,
+    // store: &FoundationalStore,
+    store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -140,8 +146,8 @@ fn process_sunswap_mint(
 }
 
 fn process_sunswap_burn(
-    store: &FoundationalStore,
-    // store: &StoreGetProto<PairCreated>,
+    // store: &FoundationalStore,
+    store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -169,8 +175,8 @@ fn process_sunswap_burn(
 }
 
 fn process_sunswap_sync(
-    store: &FoundationalStore,
-    // store: &StoreGetProto<PairCreated>,
+    // store: &FoundationalStore,
+    store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
