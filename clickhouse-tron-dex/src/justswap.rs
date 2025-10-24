@@ -46,9 +46,14 @@ pub fn process_events(
     }
 }
 
-pub fn set_new_exchange(value: NewExchange, row: &mut substreams_database_change::tables::Row) {
-    row.set("token", tron_base58_from_bytes(&value.token).unwrap());
-    row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
+pub fn set_new_exchange(value: Option<NewExchange>, row: &mut substreams_database_change::tables::Row) {
+    if let Some(value) = value {
+        row.set("token", tron_base58_from_bytes(&value.token).unwrap());
+        row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
+    } else {
+        row.set("token", "");
+        row.set("factory", "");
+    }
 }
 
 fn process_justswap_token_purchase(
@@ -62,12 +67,6 @@ fn process_justswap_token_purchase(
     log_index: usize,
     swap: &justswap::v1::TokenPurchase,
 ) {
-    // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
-        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        return;
-    };
-
     // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_token_purchase", key);
@@ -78,7 +77,7 @@ fn process_justswap_token_purchase(
     set_template_log(log, log_index, row);
 
     // Set NewExchange event data
-    set_new_exchange(new_exchange, row);
+    set_new_exchange(get_new_exchange(store, &log.address), row);
 
     // Swap info - TRX -> Token
     row.set("buyer", tron_base58_from_bytes(&swap.buyer).unwrap());
@@ -97,12 +96,6 @@ fn process_justswap_trx_purchase(
     log_index: usize,
     swap: &justswap::v1::TrxPurchase,
 ) {
-    // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
-        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        return;
-    };
-
     // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_trx_purchase", key);
@@ -113,7 +106,7 @@ fn process_justswap_trx_purchase(
     set_template_log(log, log_index, row);
 
     // Set NewExchange event data
-    set_new_exchange(new_exchange, row);
+    set_new_exchange(get_new_exchange(store, &log.address), row);
 
     // Swap info - Token -> TRX
     row.set("buyer", tron_base58_from_bytes(&swap.buyer).unwrap());
@@ -134,12 +127,6 @@ fn process_justswap_add_liquidity(
     log_index: usize,
     event: &justswap::v1::AddLiquidity,
 ) {
-    // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
-        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        return;
-    };
-
     // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_add_liquidity", key);
@@ -150,7 +137,7 @@ fn process_justswap_add_liquidity(
     set_template_log(log, log_index, row);
 
     // Set NewExchange event data
-    set_new_exchange(new_exchange, row);
+    set_new_exchange(get_new_exchange(store, &log.address), row);
 
     // Event info
     row.set("provider", tron_base58_from_bytes(&event.provider).unwrap());
@@ -169,12 +156,6 @@ fn process_justswap_remove_liquidity(
     log_index: usize,
     event: &justswap::v1::RemoveLiquidity,
 ) {
-    // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
-        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        return;
-    };
-
     // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_remove_liquidity", key);
@@ -185,7 +166,7 @@ fn process_justswap_remove_liquidity(
     set_template_log(log, log_index, row);
 
     // Set NewExchange event data
-    set_new_exchange(new_exchange, row);
+    set_new_exchange(get_new_exchange(store, &log.address), row);
 
     // Event info
     row.set("provider", tron_base58_from_bytes(&event.provider).unwrap());
@@ -204,12 +185,6 @@ fn process_justswap_snapshot(
     log_index: usize,
     event: &justswap::v1::Snapshot,
 ) {
-    // Lookup NewExchange once, exit early if not found
-    let Some(new_exchange) = get_new_exchange(store, &log.address) else {
-        substreams::log::info!("NewExchange not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
-        return;
-    };
-
     // Create the row and populate common fields
     let key = log_key(clock, tx_index, log_index);
     let row = tables.create_row("justswap_snapshot", key);
@@ -220,7 +195,7 @@ fn process_justswap_snapshot(
     set_template_log(log, log_index, row);
 
     // Set NewExchange event data
-    set_new_exchange(new_exchange, row);
+    set_new_exchange(get_new_exchange(store, &log.address), row);
 
     // Event info
     row.set("operator", tron_base58_from_bytes(&event.operator).unwrap());

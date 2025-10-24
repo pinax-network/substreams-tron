@@ -13,7 +13,6 @@ ALTER TABLE sunswap_swap
     ADD COLUMN IF NOT EXISTS amount1_out       UInt256 COMMENT 'Amount of token1 output',
 
     -- PairCreated --
-    ADD COLUMN IF NOT EXISTS factory          String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token0           String COMMENT 'Token0 contract address',
     ADD COLUMN IF NOT EXISTS token1           String COMMENT 'Token1 contract address',
 
@@ -27,7 +26,6 @@ ALTER TABLE sunswap_swap
     ADD INDEX IF NOT EXISTS idx_amount1_out (amount1_out) TYPE minmax GRANULARITY 1,
 
     -- indexes (PairCreated) --
-    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token0 (token0) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token1 (token1) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token_pair (token0, token1) TYPE bloom_filter GRANULARITY 1,
@@ -38,14 +36,12 @@ CREATE TABLE IF NOT EXISTS sunswap_pair_created AS TEMPLATE_LOG
 COMMENT 'SunSwap V2 PairCreated events';
 ALTER TABLE sunswap_pair_created
     -- PairCreated event information --
-    ADD COLUMN IF NOT EXISTS factory          String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS pair             String COMMENT 'Pair contract address',
     ADD COLUMN IF NOT EXISTS token0           String COMMENT 'Token0 contract address',
     ADD COLUMN IF NOT EXISTS token1           String COMMENT 'Token1 contract address',
 
     -- indexes --
     ADD INDEX IF NOT EXISTS idx_pair (pair) TYPE bloom_filter GRANULARITY 1,
-    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token0 (token0) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token1 (token1) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token_pair (token0, token1) TYPE bloom_filter GRANULARITY 1,
@@ -61,7 +57,6 @@ ALTER TABLE sunswap_mint
     ADD COLUMN IF NOT EXISTS amount1           UInt256 COMMENT 'Amount of token1 minted',
 
     -- PairCreated --
-    ADD COLUMN IF NOT EXISTS factory          String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token0           String COMMENT 'Token0 contract address',
     ADD COLUMN IF NOT EXISTS token1           String COMMENT 'Token1 contract address',
 
@@ -71,7 +66,6 @@ ALTER TABLE sunswap_mint
     ADD INDEX IF NOT EXISTS idx_amount1 (amount1) TYPE minmax GRANULARITY 1,
 
     -- indexes (PairCreated) --
-    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token0 (token0) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token1 (token1) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token_pair (token0, token1) TYPE bloom_filter GRANULARITY 1,
@@ -88,7 +82,6 @@ ALTER TABLE sunswap_burn
     ADD COLUMN IF NOT EXISTS `to`              String COMMENT 'Recipient address',
 
     -- PairCreated --
-    ADD COLUMN IF NOT EXISTS factory          String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token0           String COMMENT 'Token0 contract address',
     ADD COLUMN IF NOT EXISTS token1           String COMMENT 'Token1 contract address',
 
@@ -99,7 +92,6 @@ ALTER TABLE sunswap_burn
     ADD INDEX IF NOT EXISTS idx_amount1 (amount1) TYPE minmax GRANULARITY 1,
 
     -- indexes (PairCreated) --
-    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token0 (token0) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token1 (token1) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token_pair (token0, token1) TYPE bloom_filter GRANULARITY 1,
@@ -114,7 +106,6 @@ ALTER TABLE sunswap_sync
     ADD COLUMN IF NOT EXISTS reserve1          UInt256 COMMENT 'Reserve of token1',
 
     -- PairCreated --
-    ADD COLUMN IF NOT EXISTS factory          String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token0           String COMMENT 'Token0 contract address',
     ADD COLUMN IF NOT EXISTS token1           String COMMENT 'Token1 contract address',
 
@@ -123,7 +114,6 @@ ALTER TABLE sunswap_sync
     ADD INDEX IF NOT EXISTS idx_reserve1 (reserve1) TYPE minmax GRANULARITY 1,
 
     -- indexes (PairCreated) --
-    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token0 (token0) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token1 (token1) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token_pair (token0, token1) TYPE bloom_filter GRANULARITY 1,
