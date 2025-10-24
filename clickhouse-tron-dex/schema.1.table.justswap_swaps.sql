@@ -8,7 +8,7 @@ ALTER TABLE justswap_token_purchase
     ADD COLUMN IF NOT EXISTS tokens_bought      UInt256 COMMENT 'Amount of tokens bought',
 
     -- NewExchange --
-    ADD COLUMN IF NOT EXISTS exchange           String COMMENT 'Exchange contract address',
+    ADD COLUMN IF NOT EXISTS factory           String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token              String COMMENT 'Token contract address',
 
     -- indexes --
@@ -17,6 +17,7 @@ ALTER TABLE justswap_token_purchase
     ADD INDEX IF NOT EXISTS idx_tokens_bought (tokens_bought) TYPE minmax GRANULARITY 1,
 
     -- indexes (NewExchange) --
+    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token (token) TYPE bloom_filter GRANULARITY 1;
 
 -- JustSwap TrxPurchase --
@@ -29,7 +30,7 @@ ALTER TABLE justswap_trx_purchase
     ADD COLUMN IF NOT EXISTS trx_bought         UInt256 COMMENT 'Amount of TRX bought',
 
     -- NewExchange --
-    ADD COLUMN IF NOT EXISTS exchange           String COMMENT 'Exchange contract address',
+    ADD COLUMN IF NOT EXISTS factory           String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token              String COMMENT 'Token contract address',
 
     -- indexes --
@@ -38,6 +39,7 @@ ALTER TABLE justswap_trx_purchase
     ADD INDEX IF NOT EXISTS idx_trx_bought (trx_bought) TYPE minmax GRANULARITY 1,
 
     -- indexes (NewExchange) --
+    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token (token) TYPE bloom_filter GRANULARITY 1;
 
 -- JustSwap AddLiquidity --
@@ -50,7 +52,7 @@ ALTER TABLE justswap_add_liquidity
     ADD COLUMN IF NOT EXISTS token_amount       UInt256 COMMENT 'Amount of tokens added',
 
     -- NewExchange --
-    ADD COLUMN IF NOT EXISTS exchange           String COMMENT 'Exchange contract address',
+    ADD COLUMN IF NOT EXISTS factory           String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token              String COMMENT 'Token contract address',
 
     -- indexes --
@@ -59,6 +61,7 @@ ALTER TABLE justswap_add_liquidity
     ADD INDEX IF NOT EXISTS idx_token_amount (token_amount) TYPE minmax GRANULARITY 1,
 
     -- indexes (NewExchange) --
+    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token (token) TYPE bloom_filter GRANULARITY 1;
 
 -- JustSwap RemoveLiquidity --
@@ -71,7 +74,7 @@ ALTER TABLE justswap_remove_liquidity
     ADD COLUMN IF NOT EXISTS token_amount       UInt256 COMMENT 'Amount of tokens removed',
 
     -- NewExchange --
-    ADD COLUMN IF NOT EXISTS exchange           String COMMENT 'Exchange contract address',
+    ADD COLUMN IF NOT EXISTS factory           String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token              String COMMENT 'Token contract address',
 
     -- indexes --
@@ -80,6 +83,7 @@ ALTER TABLE justswap_remove_liquidity
     ADD INDEX IF NOT EXISTS idx_token_amount (token_amount) TYPE minmax GRANULARITY 1,
 
     -- indexes (NewExchange) --
+    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token (token) TYPE bloom_filter GRANULARITY 1;
 
 -- JustSwap Snapshot --
@@ -92,7 +96,7 @@ ALTER TABLE justswap_snapshot
     ADD COLUMN IF NOT EXISTS token_balance      UInt256 COMMENT 'Token balance at snapshot',
 
     -- NewExchange --
-    ADD COLUMN IF NOT EXISTS exchange           String COMMENT 'Exchange contract address',
+    ADD COLUMN IF NOT EXISTS factory           String COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS token              String COMMENT 'Token contract address',
 
     -- indexes --
@@ -101,6 +105,7 @@ ALTER TABLE justswap_snapshot
     ADD INDEX IF NOT EXISTS idx_token_balance (token_balance) TYPE minmax GRANULARITY 1,
 
     -- indexes (NewExchange) --
+    ADD INDEX IF NOT EXISTS idx_factory (factory) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_token (token) TYPE bloom_filter GRANULARITY 1;
 
 -- JustSwap NewExchange --

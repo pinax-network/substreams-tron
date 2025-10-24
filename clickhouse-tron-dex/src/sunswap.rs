@@ -46,13 +46,13 @@ pub fn process_events(
 
 pub fn set_pair_created(value: Option<PairCreated>, row: &mut substreams_database_change::tables::Row) {
     if let Some(value) = value {
+        row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
         row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
         row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
-        row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
     } else {
+        row.set("factory", "");
         row.set("token0", "");
         row.set("token1", "");
-        row.set("factory", "");
     }
 }
 

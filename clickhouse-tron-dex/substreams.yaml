@@ -16,14 +16,13 @@ imports:
   sunswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunswap-v0.1.1.spkg
   sunpump: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunpump-v0.1.1.spkg
 
-  # Foundational Store
-  foundational_store: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-foundational-store-v0.1.1.spkg
+  # # Foundational Store
+  # foundational_store: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-foundational-store-v0.1.1.spkg
 
 binaries:
   default:
     type: wasm/rust-v1
     file: ../target/wasm32-unknown-unknown/release/clickhouse_tron_dex.wasm
-
 modules:
   - name: db_out
     kind: map
@@ -32,9 +31,7 @@ modules:
       - map: justswap:map_events
       - map: sunswap:map_events
       - map: sunpump:map_events
-      # - store: foundational_store:store_pair_created
-      # - store: foundational_store:store_new_exchange
-      - foundational-store: tron-clickhouse-dex@v0.1.1
+      # - foundational-store: tron-clickhouse-dex@v0.1.1
     output:
       type: proto:sf.substreams.sink.database.v1.DatabaseChanges
 

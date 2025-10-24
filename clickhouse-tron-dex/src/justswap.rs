@@ -48,11 +48,11 @@ pub fn process_events(
 
 pub fn set_new_exchange(value: Option<NewExchange>, row: &mut substreams_database_change::tables::Row) {
     if let Some(value) = value {
-        row.set("token", tron_base58_from_bytes(&value.token).unwrap());
         row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
+        row.set("token", tron_base58_from_bytes(&value.token).unwrap());
     } else {
-        row.set("token", "");
         row.set("factory", "");
+        row.set("token", "");
     }
 }
 
