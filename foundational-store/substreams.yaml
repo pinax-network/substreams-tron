@@ -7,8 +7,9 @@ package:
   image: ../image.png
 
 imports:
-  sunswap: ../sunswap/substreams.yaml
-  justswap: ../justswap/substreams.yaml
+  # DEX Substreams
+  justswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-justswap-v0.1.1.spkg
+  sunswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunswap-v0.1.1.spkg
 
 binaries:
   default:
@@ -31,19 +32,5 @@ modules:
       - map: justswap:map_events
     output:
       type: proto:sf.substreams.foundational_store.v1.Entries
-
-  - name: store_pair_created
-    kind: store
-    updatePolicy: set
-    valueType: proto:tron.foundational_store.v1.PairCreated
-    inputs:
-      - map: sunswap:map_events
-
-  - name: store_new_exchange
-    kind: store
-    updatePolicy: set
-    valueType: proto:tron.foundational_store.v1.NewExchange
-    inputs:
-      - map: justswap:map_events
 
 network: tron

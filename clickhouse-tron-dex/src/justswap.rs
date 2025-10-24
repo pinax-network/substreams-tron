@@ -1,7 +1,7 @@
 use common::tron_base58_from_bytes;
 use proto::pb::tron::{foundational_store::v1::NewExchange, justswap};
-// use substreams::store::FoundationalStore;
-use substreams::{pb::substreams::Clock, store::StoreGetProto};
+use substreams::pb::substreams::Clock;
+use substreams::store::FoundationalStore;
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -16,8 +16,8 @@ pub fn process_events(
     tables: &mut Tables,
     clock: &Clock,
     events: &justswap::v1::Events,
-    store: &StoreGetProto<NewExchange>,
-    // foundational_store: &FoundationalStore,
+    // store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
 ) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
@@ -52,8 +52,8 @@ pub fn set_new_exchange(value: NewExchange, row: &mut substreams_database_change
 }
 
 fn process_justswap_token_purchase(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -87,8 +87,8 @@ fn process_justswap_token_purchase(
 }
 
 fn process_justswap_trx_purchase(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -124,8 +124,8 @@ fn process_justswap_trx_purchase(
 }
 
 fn process_justswap_add_liquidity(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -159,8 +159,8 @@ fn process_justswap_add_liquidity(
 }
 
 fn process_justswap_remove_liquidity(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,
@@ -194,8 +194,8 @@ fn process_justswap_remove_liquidity(
 }
 
 fn process_justswap_snapshot(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<NewExchange>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<NewExchange>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &justswap::v1::Transaction,

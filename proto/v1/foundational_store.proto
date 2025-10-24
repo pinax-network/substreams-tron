@@ -4,13 +4,15 @@ package tron.foundational_store.v1;
 
 // key = <bytes pair>
 message PairCreated {
-  bytes factory = 1; // log.address - the factory that created the pair
-  bytes token0 = 2;
-  bytes token1 = 3;
+  bytes pair = 1;    // key - the pair address
+  bytes factory = 2; // log.address - the factory that created the pair
+  bytes token0 = 3;
+  bytes token1 = 4;
 }
 
 // key = <bytes exchange>
 message NewExchange {
-  bytes factory = 1; // log.address - the factory that created the pair
-  bytes token = 2;
+  bytes exchange = 1; // key - the exchange address
+  bytes factory = 2;  // log.address - the factory that created the pair
+  bytes token = 3;
 }

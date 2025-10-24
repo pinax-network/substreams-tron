@@ -18,17 +18,17 @@ pub fn db_out(
     justswap: pb::justswap::v1::Events,
     sunswap: pb::sunswap::v1::Events,
     sunpump: pb::sunpump::v1::Events,
-    // store: FoundationalStore,
-    store_pair_created: StoreGetProto<PairCreated>,
-    store_new_exchange: StoreGetProto<NewExchange>,
+    store: FoundationalStore,
+    // store_pair_created: StoreGetProto<PairCreated>,
+    // store_new_exchange: StoreGetProto<NewExchange>,
 ) -> Result<DatabaseChanges, Error> {
     let mut tables = substreams_database_change::tables::Tables::new();
 
     // Process JustSwap events
-    justswap::process_events(&mut tables, &clock, &justswap, &store_new_exchange);
+    justswap::process_events(&mut tables, &clock, &justswap, &store);
 
     // Process SunSwap events
-    sunswap::process_events(&mut tables, &clock, &sunswap, &store_pair_created);
+    sunswap::process_events(&mut tables, &clock, &sunswap, &store);
 
     // Process SunPump events
     sunpump::process_events(&mut tables, &clock, &sunpump);

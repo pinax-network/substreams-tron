@@ -4,22 +4,28 @@
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PairCreated {
-    /// log.address - the factory that created the pair
+    /// key - the pair address
     #[prost(bytes="vec", tag="1")]
-    pub factory: ::prost::alloc::vec::Vec<u8>,
+    pub pair: ::prost::alloc::vec::Vec<u8>,
+    /// log.address - the factory that created the pair
     #[prost(bytes="vec", tag="2")]
-    pub token0: ::prost::alloc::vec::Vec<u8>,
+    pub factory: ::prost::alloc::vec::Vec<u8>,
     #[prost(bytes="vec", tag="3")]
+    pub token0: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="vec", tag="4")]
     pub token1: ::prost::alloc::vec::Vec<u8>,
 }
 /// key = <bytes exchange>
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct NewExchange {
-    /// log.address - the factory that created the pair
+    /// key - the exchange address
     #[prost(bytes="vec", tag="1")]
-    pub factory: ::prost::alloc::vec::Vec<u8>,
+    pub exchange: ::prost::alloc::vec::Vec<u8>,
+    /// log.address - the factory that created the pair
     #[prost(bytes="vec", tag="2")]
+    pub factory: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="vec", tag="3")]
     pub token: ::prost::alloc::vec::Vec<u8>,
 }
 // @@protoc_insertion_point(module)

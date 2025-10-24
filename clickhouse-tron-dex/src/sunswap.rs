@@ -1,8 +1,10 @@
+use core::panic;
+
 use common::tron_base58_from_bytes;
 use proto::pb::tron::foundational_store::v1::PairCreated;
 use proto::pb::tron::sunswap;
-// use substreams::store::FoundationalStore;
-use substreams::{pb::substreams::Clock, store::StoreGetProto};
+use substreams::pb::substreams::Clock;
+use substreams::store::FoundationalStore;
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -17,8 +19,8 @@ pub fn process_events(
     tables: &mut Tables,
     clock: &Clock,
     events: &sunswap::v1::Events,
-    store: &StoreGetProto<PairCreated>,
-    // foundational_store: &FoundationalStore,
+    // store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
 ) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
@@ -51,8 +53,8 @@ pub fn set_pair_created(value: PairCreated, row: &mut substreams_database_change
 }
 
 fn process_sunswap_swap(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -63,7 +65,8 @@ fn process_sunswap_swap(
 ) {
     // Lookup PairCreated once, exit early if not found
     let Some(pair_created) = get_pair_created(store, &log.address) else {
-        substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
+        // substreams::log::info!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
+        panic!("PairCreated not found in store for address: {}", tron_base58_from_bytes(&log.address).unwrap());
         return;
     };
 
@@ -111,8 +114,8 @@ fn process_sunswap_pair_created(
 }
 
 fn process_sunswap_mint(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -145,8 +148,8 @@ fn process_sunswap_mint(
 }
 
 fn process_sunswap_burn(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
@@ -180,8 +183,8 @@ fn process_sunswap_burn(
 }
 
 fn process_sunswap_sync(
-    // store: &FoundationalStore,
-    store: &StoreGetProto<PairCreated>,
+    store: &FoundationalStore,
+    // store: &StoreGetProto<PairCreated>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunswap::v1::Transaction,
