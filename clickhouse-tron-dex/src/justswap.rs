@@ -12,13 +12,7 @@ use crate::{
 };
 
 // JustSwap Processing
-pub fn process_events(
-    tables: &mut Tables,
-    clock: &Clock,
-    events: &justswap::v1::Events,
-    // store: &StoreGetProto<NewExchange>,
-    store: &FoundationalStore,
-) {
+pub fn process_events(tables: &mut Tables, clock: &Clock, events: &justswap::v1::Events, store: &FoundationalStore) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
@@ -50,9 +44,15 @@ pub fn set_new_exchange(value: Option<NewExchange>, row: &mut substreams_databas
     if let Some(value) = value {
         row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
         row.set("token", tron_base58_from_bytes(&value.token).unwrap());
+        substreams::log::info!(
+            "NewExchange found: factory={}, token={}",
+            tron_base58_from_bytes(&value.factory).unwrap(),
+            tron_base58_from_bytes(&value.token).unwrap(),
+        );
     } else {
         row.set("factory", "");
         row.set("token", "");
+        substreams::log::info!("NewExchange not found");
     }
 }
 

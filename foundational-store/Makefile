@@ -1,6 +1,7 @@
 ENDPOINT ?= tronevm.substreams.pinax.network:443
 # ENDPOINT ?= mainnet-evm.tron.streamingfast.io:443
 START_BLOCK ?= 70027397
+STOP_BLOCK ?= +1000
 PARALLEL_JOBS ?= 500
 
 .PHONY: build
@@ -27,7 +28,7 @@ prod: build
 store:
 	foundational-store server \
 		--dsn=badger://$(HOME)/.local/share/foundational-store \
-		--type-url=tron.foundational_store.v1.PairCreated \
+		--type-url=tron.foundational_store.v1.NewExchange \
 		--manifest-path=substreams.yaml \
 		--output-module-name=foundational_store \
 		--endpoint=tronevm.substreams.pinax.network:443 \

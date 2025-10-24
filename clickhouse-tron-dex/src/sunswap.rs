@@ -13,13 +13,7 @@ use crate::{
 };
 
 // SunSwap Processing
-pub fn process_events(
-    tables: &mut Tables,
-    clock: &Clock,
-    events: &sunswap::v1::Events,
-    // store: &StoreGetProto<PairCreated>,
-    store: &FoundationalStore,
-) {
+pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunswap::v1::Events, store: &FoundationalStore) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
@@ -49,10 +43,17 @@ pub fn set_pair_created(value: Option<PairCreated>, row: &mut substreams_databas
         row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
         row.set("token0", tron_base58_from_bytes(&value.token0).unwrap());
         row.set("token1", tron_base58_from_bytes(&value.token1).unwrap());
+        substreams::log::info!(
+            "PairCreated found: factory={}, token0={}, token1={}",
+            tron_base58_from_bytes(&value.factory).unwrap(),
+            tron_base58_from_bytes(&value.token0).unwrap(),
+            tron_base58_from_bytes(&value.token1).unwrap(),
+        );
     } else {
         row.set("factory", "");
         row.set("token0", "");
         row.set("token1", "");
+        substreams::log::info!("PairCreated not found");
     }
 }
 

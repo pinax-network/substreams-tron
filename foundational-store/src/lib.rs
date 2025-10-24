@@ -3,6 +3,8 @@ use prost_types::Any;
 use proto::pb::tron as pb;
 use proto::pb::tron::foundational_store::v1::{NewExchange, PairCreated};
 use substreams::pb::sf::substreams::foundational_store::v1::{Entries, Entry};
+use substreams::store::StoreSetProto;
+use substreams::{prelude::*, Hex};
 
 const URL_PAIR_CREATED: &str = "type.googleapis.com/tron.foundational_store.v1.PairCreated";
 const URL_NEW_EXCHANGE: &str = "type.googleapis.com/tron.foundational_store.v1.NewExchange";
@@ -16,6 +18,7 @@ pub fn foundational_store(sunswap: pb::sunswap::v1::Events, justswap: pb::justsw
             // ---- PairCreated ----
             if let Some(pb::sunswap::v1::log::Log::PairCreated(pair_created)) = &log.log {
                 let key = pair_created.pair.clone();
+                substreams::log::info!("Processing PairCreated for pair: {}", Hex::encode(&key));
                 let payload = PairCreated {
                     pair: key.clone(),
                     factory: log.address.clone(),
@@ -35,6 +38,7 @@ pub fn foundational_store(sunswap: pb::sunswap::v1::Events, justswap: pb::justsw
             // ---- NewExchange ----
             if let Some(pb::justswap::v1::log::Log::NewExchange(new_exchange)) = &log.log {
                 let key = new_exchange.exchange.to_vec();
+                substreams::log::info!("Processing NewExchange for exchange: {}", Hex::encode(&key));
                 let payload = NewExchange {
                     exchange: key.clone(),
                     factory: log.address.clone(),
@@ -49,6 +53,41 @@ pub fn foundational_store(sunswap: pb::sunswap::v1::Events, justswap: pb::justsw
     }
 
     Ok(Entries { entries })
+}
+
+#[substreams::handlers::store]
+pub fn store_pair_created(sunswap: pb::sunswap::v1::Events, store: StoreSetProto<PairCreated>) {
+    for trx in sunswap.transactions.iter() {
+        for log in trx.logs.iter() {
+            // ---- PairCreated ----
+            if let Some(pb::sunswap::v1::log::Log::PairCreated(pair_created)) = &log.log {
+                let payload = PairCreated {
+                    pair: pair_created.pair.clone(),
+                    factory: log.address.clone(),
+                    token0: pair_created.token0.clone(),
+                    token1: pair_created.token1.clone(),
+                };
+                store.set(log.ordinal, Hex::encode(&pair_created.pair), &payload);
+            }
+        }
+    }
+}
+
+#[substreams::handlers::store]
+pub fn store_new_exchange(justswap: pb::justswap::v1::Events, store: StoreSetProto<NewExchange>) {
+    for trx in justswap.transactions.iter() {
+        for log in trx.logs.iter() {
+            // ---- NewExchange ----
+            if let Some(pb::justswap::v1::log::Log::NewExchange(new_exchange)) = &log.log {
+                let payload = NewExchange {
+                    exchange: new_exchange.exchange.clone(),
+                    factory: log.address.clone(),
+                    token: new_exchange.token.clone(),
+                };
+                store.set(log.ordinal, Hex::encode(&new_exchange.exchange), &payload);
+            }
+        }
+    }
 }
 
 fn pack_any<T: Message>(msg: &T, type_url: &str) -> Any {

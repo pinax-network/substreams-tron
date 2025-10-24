@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: tron_foundational_store
-  version: v0.1.1
+  version: v0.1.2
   url: https://github.com/pinax-network/substreams-tron
   description: Tron Foundational Store
   image: ../image.png
@@ -32,5 +32,19 @@ modules:
       - map: justswap:map_events
     output:
       type: proto:sf.substreams.foundational_store.v1.Entries
+
+  - name: store_pair_created
+    kind: store
+    updatePolicy: set
+    valueType: proto:tron.foundational_store.v1.PairCreated
+    inputs:
+      - map: sunswap:map_events
+
+  - name: store_new_exchange
+    kind: store
+    updatePolicy: set
+    valueType: proto:tron.foundational_store.v1.NewExchange
+    inputs:
+      - map: justswap:map_events
 
 network: tron
