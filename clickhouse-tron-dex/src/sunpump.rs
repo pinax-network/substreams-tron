@@ -4,6 +4,7 @@ use substreams::{pb::substreams::Clock, store::StoreGetProto};
 use substreams_database_change::tables::Tables;
 
 use crate::{
+    foundational_stores::get_token_create,
     logs::{log_key, set_template_log},
     set_clock,
     transactions::set_template_tx,
@@ -15,10 +16,10 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunpump::v1::
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
                 Some(sunpump::v1::log::Log::TokenPurchased(purchase)) => {
-                    process_sunpump_token_purchased(tables, clock, tx, log, tx_index, log_index, purchase);
+                    process_sunpump_token_purchased(store, tables, clock, tx, log, tx_index, log_index, purchase);
                 }
                 Some(sunpump::v1::log::Log::TokenSold(sold)) => {
-                    process_sunpump_token_sold(tables, clock, tx, log, tx_index, log_index, sold);
+                    process_sunpump_token_sold(store, tables, clock, tx, log, tx_index, log_index, sold);
                 }
                 Some(sunpump::v1::log::Log::LaunchPending(event)) => {
                     process_sunpump_launch_pending(tables, clock, tx, log, tx_index, log_index, event);
@@ -59,7 +60,27 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunpump::v1::
     }
 }
 
+pub fn set_token_create(value: Option<TokenCreate>, row: &mut substreams_database_change::tables::Row) {
+    if let Some(value) = value {
+        row.set("factory", tron_base58_from_bytes(&value.factory).unwrap());
+        row.set("creator", tron_base58_from_bytes(&value.creator).unwrap());
+        row.set("token_index", &value.token_index);
+        substreams::log::info!(
+            "TokenCreate found: factory={}, creator={}, token_index={}",
+            tron_base58_from_bytes(&value.factory).unwrap(),
+            tron_base58_from_bytes(&value.creator).unwrap(),
+            &value.token_index,
+        );
+    } else {
+        row.set("factory", "");
+        row.set("creator", "");
+        row.set("token_index", 0);
+        substreams::log::info!("TokenCreate not found");
+    }
+}
+
 fn process_sunpump_token_purchased(
+    store: &StoreGetProto<TokenCreate>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunpump::v1::Transaction,
@@ -76,6 +97,9 @@ fn process_sunpump_token_purchased(
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
 
+    // Set TokenCreate event data
+    set_token_create(get_token_create(store, &log.address), row);
+
     // Swap info - TRX -> Token purchase
     row.set("buyer", tron_base58_from_bytes(&purchase.buyer).unwrap());
     row.set("trx_amount", &purchase.trx_amount);
@@ -86,6 +110,7 @@ fn process_sunpump_token_purchased(
 }
 
 fn process_sunpump_token_sold(
+    store: &StoreGetProto<TokenCreate>,
     tables: &mut Tables,
     clock: &Clock,
     tx: &sunpump::v1::Transaction,
@@ -101,6 +126,9 @@ fn process_sunpump_token_sold(
     set_clock(clock, row);
     set_template_tx(tx, tx_index, row);
     set_template_log(log, log_index, row);
+
+    // Set TokenCreate event data
+    set_token_create(get_token_create(store, &log.address), row);
 
     // Swap info - Token -> TRX sale
     row.set("seller", tron_base58_from_bytes(&sold.seller).unwrap());

@@ -134,7 +134,9 @@ SELECT
         token,
         token_amount,
         fee,
-        token_reserve
+        token_reserve,
+        creator,
+        token_index
     ),
 
     -- mapped swap fields
@@ -163,7 +165,9 @@ SELECT
         token,
         token_amount,
         trx_amount,
-        fee
+        fee,
+        creator,
+        token_index
     ),
 
     -- mapped swap fields
