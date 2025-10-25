@@ -16,3 +16,11 @@ message NewExchange {
   bytes factory = 2;  // log.address - the factory that created the pair
   bytes token = 3;
 }
+
+// key = <bytes token_address>
+message TokenCreate {
+  bytes token_address = 1; // key - the token address
+  bytes factory = 2;       // log.address - the factory that created the pair
+  string token_index = 3;  // uint256
+  bytes creator = 4;
+}

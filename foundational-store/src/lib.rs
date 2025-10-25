@@ -1,16 +1,21 @@
 use prost::Message;
 use prost_types::Any;
 use proto::pb::tron as pb;
-use proto::pb::tron::foundational_store::v1::{NewExchange, PairCreated};
+use proto::pb::tron::foundational_store::v1::{NewExchange, PairCreated, TokenCreate};
 use substreams::pb::sf::substreams::foundational_store::v1::{Entries, Entry};
 use substreams::store::StoreSetProto;
 use substreams::{prelude::*, Hex};
 
 const URL_PAIR_CREATED: &str = "type.googleapis.com/tron.foundational_store.v1.PairCreated";
 const URL_NEW_EXCHANGE: &str = "type.googleapis.com/tron.foundational_store.v1.NewExchange";
+const URL_TOKEN_CREATE: &str = "type.googleapis.com/tron.foundational_store.v1.TokenCreate";
 
 #[substreams::handlers::map]
-pub fn foundational_store(sunswap: pb::sunswap::v1::Events, justswap: pb::justswap::v1::Events) -> Result<Entries, substreams::errors::Error> {
+pub fn foundational_store(
+    sunswap: pb::sunswap::v1::Events,
+    justswap: pb::justswap::v1::Events,
+    sunpump: pb::sunpump::v1::Events,
+) -> Result<Entries, substreams::errors::Error> {
     let mut entries = Vec::new();
 
     for trx in sunswap.transactions.iter() {
@@ -52,6 +57,26 @@ pub fn foundational_store(sunswap: pb::sunswap::v1::Events, justswap: pb::justsw
         }
     }
 
+    for trx in sunpump.transactions.iter() {
+        for log in trx.logs.iter() {
+            // ---- TokenCreate ----
+            if let Some(pb::sunpump::v1::log::Log::TokenCreate(token_create)) = &log.log {
+                let key = token_create.token_address.to_vec();
+                substreams::log::info!("Processing TokenCreate for token: {}", Hex::encode(&key));
+                let payload = TokenCreate {
+                    token_address: key.clone(),
+                    factory: log.address.clone(),
+                    token_index: token_create.token_index.clone(),
+                    creator: token_create.creator.clone(),
+                };
+                entries.push(Entry {
+                    key,
+                    value: Some(pack_any(&payload, URL_TOKEN_CREATE)),
+                });
+            }
+        }
+    }
+
     Ok(Entries { entries })
 }
 
@@ -85,6 +110,24 @@ pub fn store_new_exchange(justswap: pb::justswap::v1::Events, store: StoreSetPro
                     token: new_exchange.token.clone(),
                 };
                 store.set(log.ordinal, Hex::encode(&new_exchange.exchange), &payload);
+            }
+        }
+    }
+}
+
+#[substreams::handlers::store]
+pub fn store_token_create(sunpump: pb::sunpump::v1::Events, store: StoreSetProto<TokenCreate>) {
+    for trx in sunpump.transactions.iter() {
+        for log in trx.logs.iter() {
+            // ---- TokenCreate ----
+            if let Some(pb::sunpump::v1::log::Log::TokenCreate(token_create)) = &log.log {
+                let payload = TokenCreate {
+                    token_address: token_create.token_address.clone(),
+                    factory: log.address.clone(),
+                    token_index: token_create.token_index.clone(),
+                    creator: token_create.creator.clone(),
+                };
+                store.set(log.ordinal, Hex::encode(&token_create.token_address), &payload);
             }
         }
     }

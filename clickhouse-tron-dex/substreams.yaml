@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: clickhouse_tron_dex
-  version: v0.1.2
+  version: v0.1.3
   url: https://github.com/pinax-network/substreams-tron
   description: DEX swaps for JustSwap, SunSwap, and SunPump on TRON blockchain
   image: ../image.png
@@ -15,7 +15,7 @@ imports:
   justswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-justswap-v0.1.1.spkg
   sunswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunswap-v0.1.1.spkg
   sunpump: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunpump-v0.1.1.spkg
-  foundational_store: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.2/tron-foundational-store-v0.1.2.spkg
+  foundational_store: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.3/tron-foundational-store-v0.1.3.spkg
 
 binaries:
   default:
@@ -32,6 +32,7 @@ modules:
       # - foundational-store: tron-clickhouse-dex@v0.1.1
       - store: foundational_store:store_pair_created
       - store: foundational_store:store_new_exchange
+      - store: foundational_store:store_token_create
     output:
       type: proto:sf.substreams.sink.database.v1.DatabaseChanges
 

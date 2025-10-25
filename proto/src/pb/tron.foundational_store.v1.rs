@@ -28,4 +28,20 @@ pub struct NewExchange {
     #[prost(bytes="vec", tag="3")]
     pub token: ::prost::alloc::vec::Vec<u8>,
 }
+/// key = <bytes token_address>
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TokenCreate {
+    /// key - the token address
+    #[prost(bytes="vec", tag="1")]
+    pub token_address: ::prost::alloc::vec::Vec<u8>,
+    /// log.address - the factory that created the pair
+    #[prost(bytes="vec", tag="2")]
+    pub factory: ::prost::alloc::vec::Vec<u8>,
+    /// uint256
+    #[prost(string, tag="3")]
+    pub token_index: ::prost::alloc::string::String,
+    #[prost(bytes="vec", tag="4")]
+    pub creator: ::prost::alloc::vec::Vec<u8>,
+}
 // @@protoc_insertion_point(module)
