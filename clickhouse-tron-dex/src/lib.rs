@@ -6,7 +6,7 @@ mod sunswap;
 mod transactions;
 
 use proto::pb::tron as pb;
-use proto::pb::tron::foundational_store::v1::{NewExchange, PairCreated};
+use proto::pb::tron::foundational_store::v1::{NewExchange, PairCreated, TokenCreate};
 use substreams::errors::Error;
 use substreams::pb::substreams::Clock;
 use substreams::prelude::*;
@@ -20,6 +20,7 @@ pub fn db_out(
     sunpump: pb::sunpump::v1::Events,
     store_pair_created: StoreGetProto<PairCreated>,
     store_new_exchange: StoreGetProto<NewExchange>,
+    store_token_create: StoreGetProto<TokenCreate>,
     // store: FoundationalStore,
 ) -> Result<DatabaseChanges, Error> {
     let mut tables = substreams_database_change::tables::Tables::new();
@@ -31,7 +32,7 @@ pub fn db_out(
     sunswap::process_events(&mut tables, &clock, &sunswap, &store_pair_created);
 
     // Process SunPump events
-    sunpump::process_events(&mut tables, &clock, &sunpump);
+    sunpump::process_events(&mut tables, &clock, &sunpump, &store_token_create);
 
     // ONLY include blocks if events are present
     if !tables.tables.is_empty() {

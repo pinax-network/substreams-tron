@@ -1,6 +1,6 @@
 use common::tron_base58_from_bytes;
-use proto::pb::tron::sunpump;
-use substreams::pb::substreams::Clock;
+use proto::pb::tron::{foundational_store::v1::TokenCreate, sunpump};
+use substreams::{pb::substreams::Clock, store::StoreGetProto};
 use substreams_database_change::tables::Tables;
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
 };
 
 // SunPump Processing
-pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunpump::v1::Events) {
+pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunpump::v1::Events, store: &StoreGetProto<TokenCreate>) {
     for (tx_index, tx) in events.transactions.iter().enumerate() {
         for (log_index, log) in tx.logs.iter().enumerate() {
             match &log.log {
