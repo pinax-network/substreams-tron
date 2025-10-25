@@ -30,4 +30,4 @@ dev: build
 
 .PHONY: setup
 setup: pack
-	substreams-sink-sql setup clickhouse://default:@localhost:9000/default substreams.yaml --skip-package-validation
+	substreams-sink-sql setup clickhouse://default:@localhost:9000/default substreams.yaml
