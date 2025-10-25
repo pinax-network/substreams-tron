@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS swaps AS TEMPLATE_LOG
 COMMENT 'Swaps';
 ALTER TABLE swaps
     -- swap event information --
+    ADD COLUMN IF NOT EXISTS protocol           LowCardinality(String) COMMENT 'DEX protocol name',
     ADD COLUMN IF NOT EXISTS factory            LowCardinality(String) COMMENT 'Factory contract address',
     ADD COLUMN IF NOT EXISTS pool               LowCardinality(String) COMMENT 'Pool/exchange contract address',
     ADD COLUMN IF NOT EXISTS user               String COMMENT 'User wallet address',
@@ -12,6 +13,7 @@ ALTER TABLE swaps
     ADD COLUMN IF NOT EXISTS output_amount      UInt256 COMMENT 'Amount of output tokens received',
 
     -- indexes --
+    ADD INDEX IF NOT EXISTS idx_protocol          (protocol)          TYPE set(4)          GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_factory           (factory)           TYPE bloom_filter    GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_pool              (pool)              TYPE bloom_filter    GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_user              (user)              TYPE bloom_filter    GRANULARITY 1,
@@ -23,6 +25,7 @@ ALTER TABLE swaps
     ADD INDEX IF NOT EXISTS idx_contract_pair_inv (output_contract, input_contract)       TYPE bloom_filter GRANULARITY 1,
 
     -- projections --
+    ADD PROJECTION IF NOT EXISTS prj_protocol (SELECT protocol, timestamp, _part_offset ORDER BY (protocol, timestamp)),
     ADD PROJECTION IF NOT EXISTS prj_factory (SELECT factory, timestamp, _part_offset ORDER BY (factory, timestamp)),
     ADD PROJECTION IF NOT EXISTS prj_pool (SELECT pool, timestamp, _part_offset ORDER BY (pool, timestamp)),
     ADD PROJECTION IF NOT EXISTS prj_user (SELECT user, timestamp, _part_offset ORDER BY (user, timestamp)),
@@ -35,6 +38,7 @@ ALTER TABLE swaps
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_sunswap_swap
 TO swaps AS
 SELECT
+    'sunswap' AS protocol,
     -- include everything from sunswap_swap except the non-relevant fields
     * EXCEPT (
         sender,
@@ -66,6 +70,7 @@ FROM sunswap_swap;
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_justswap_token_purchase
 TO swaps AS
 SELECT
+    'justswap' AS protocol,
     -- include everything from justswap_token_purchase except the non-relevant fields
     * EXCEPT (
         buyer,
@@ -93,6 +98,7 @@ FROM justswap_token_purchase;
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_justswap_trx_purchase
 TO swaps AS
 SELECT
+    'justswap' AS protocol,
     -- include everything from justswap_trx_purchase except the non-relevant fields
     * EXCEPT (
         buyer,
@@ -120,6 +126,7 @@ FROM justswap_trx_purchase;
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_sunpump_token_purchased
 TO swaps AS
 SELECT
+    'sunpump' AS protocol,
     -- include everything from sunpump_token_purchased except the non-relevant fields
     * EXCEPT (
         buyer,
@@ -149,6 +156,7 @@ FROM sunpump_token_purchased;
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_sunpump_token_sold
 TO swaps AS
 SELECT
+    'sunpump' AS protocol,
     -- include everything from sunpump_token_sold except the non-relevant fields
     * EXCEPT (
         seller,
