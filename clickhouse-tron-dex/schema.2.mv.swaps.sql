@@ -63,7 +63,8 @@ SELECT
     if (amount0_in > toUInt256(0), token1, token0)      AS output_contract,
     if (amount0_in > toUInt256(0), amount1_out, amount0_out) AS output_amount
 
-FROM sunswap_swap;
+FROM sunswap_swap
+WHERE factory != '';  -- exclude invalid events with empty factory address
 
 
 -- JustSwap TokenPurchase: User buys tokens with TRX (TRX → Token)
@@ -91,7 +92,8 @@ SELECT
     token                              AS output_contract,
     tokens_bought                      AS output_amount
 
-FROM justswap_token_purchase;
+FROM justswap_token_purchase
+WHERE factory != '';  -- exclude invalid events with empty factory address
 
 
 -- JustSwap TrxPurchase: User buys TRX with tokens (Token → TRX)
@@ -119,7 +121,8 @@ SELECT
     'T0000000000000000000000000000000000000001'                                 AS output_contract,  -- TRX native asset
     trx_bought                         AS output_amount
 
-FROM justswap_trx_purchase;
+FROM justswap_trx_purchase
+WHERE factory != '';  -- exclude invalid events with empty factory address
 
 
 -- SunPump TokenPurchased: User buys tokens with TRX (TRX → Token)
@@ -151,7 +154,8 @@ SELECT
     token                              AS output_contract,
     token_amount                       AS output_amount
 
-FROM sunpump_token_purchased;
+FROM sunpump_token_purchased
+WHERE factory != '';  -- exclude invalid events with empty factory address
 
 
 -- SunPump TokenSold: User sells tokens for TRX (Token → TRX)
@@ -182,4 +186,5 @@ SELECT
     'T0000000000000000000000000000000000000001'                                 AS output_contract,  -- TRX native asset
     trx_amount                         AS output_amount
 
-FROM sunpump_token_sold;
+FROM sunpump_token_sold
+WHERE factory != '';  -- exclude invalid events with empty factory address
