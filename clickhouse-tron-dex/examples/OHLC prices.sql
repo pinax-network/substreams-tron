@@ -24,7 +24,7 @@ WITH (
       uniqMerge(uaw)          AS uaw,
       sum(transactions)       AS transactions
 FROM ohlc_prices
-WHERE interval_min = 60 AND pool = 'TFGDbUyP8xez44C76fin3bn3Ss6jugoUwJ' -- SUNSWAP-USDT-TRX V2 (S-USDT-TRX)
+WHERE interval_min = 1 AND pool = 'TFGDbUyP8xez44C76fin3bn3Ss6jugoUwJ' -- SUNSWAP-USDT-TRX V2 (S-USDT-TRX)
 GROUP BY pool, timestamp
 ORDER BY timestamp DESC
 LIMIT 10;

@@ -57,7 +57,8 @@ TO ohlc_prices
 AS
 WITH
     -- predefined intervals --
-    [1, 60, 1440] AS intervals, -- in minutes: 1min, 1hr, 1day
+    -- in minutes: 1m, 5m, 10m, 30m, 1h, 4h, 1d, 1w
+    [1, 5, 10, 30, 60, 240, 1440, 10080] AS intervals,
 
     -- canonical token ordering
     (input_contract <= output_contract) AS dir,
@@ -97,6 +98,9 @@ SELECT
     count()                 AS transactions
 FROM swaps s
 GROUP BY
-    interval_min, -- bar interval
-    pool, factory, protocol, token0, token1, -- canonical token ordering
-    timestamp; -- bar beginning
+    -- bar interval
+    interval_min,
+    -- canonical token ordering
+    pool, factory, protocol, token0, token1,
+     -- bar beginning
+    timestamp;

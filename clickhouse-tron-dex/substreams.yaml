@@ -15,7 +15,8 @@ imports:
   justswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-justswap-v0.1.1.spkg
   sunswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunswap-v0.1.1.spkg
   sunpump: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunpump-v0.1.1.spkg
-  foundational_store: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.3/tron-foundational-store-v0.1.3.spkg
+  # foundational_store: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.3/tron-foundational-store-v0.1.3.spkg
+  foundational_store: ../foundational-store/substreams.yaml
 
 binaries:
   default:

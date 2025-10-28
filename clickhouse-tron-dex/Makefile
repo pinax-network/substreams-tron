@@ -1,7 +1,7 @@
 ENDPOINT ?= tronevm.substreams.pinax.network:443
 # ENDPOINT ?= 172.20.51.61:9000
-START_BLOCK ?= 27027397
-STOP_BLOCK ?= +1000
+START_BLOCK ?= 73000000
+STOP_BLOCK ?= 73001000
 PARALLEL_JOBS ?= 500
 
 .PHONY: build
@@ -26,7 +26,7 @@ prod: build
 
 .PHONY: dev
 dev: build
-	substreams-sink-sql run clickhouse://default:@localhost:9000/default substreams.yaml -e $(ENDPOINT) $(START_BLOCK): --undo-buffer-size 100 --on-module-hash-mistmatch=warn --batch-block-flush-interval 100 --infinite-retry
+	substreams-sink-sql run clickhouse://default:@localhost:9000/default substreams.yaml -e $(ENDPOINT) $(START_BLOCK):$(STOP_BLOCK) --undo-buffer-size 100 --on-module-hash-mistmatch=warn --batch-block-flush-interval 100 --infinite-retry
 
 .PHONY: setup
 setup: pack
