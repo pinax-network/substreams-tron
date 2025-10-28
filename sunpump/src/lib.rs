@@ -6,8 +6,12 @@ use substreams_ethereum::Event;
 /// Helper function to decode TokenCreateV2 events with a less restrictive length check.
 /// The generated match_log in substreams-abis uses `< 256` which is too strict and misses
 /// valid events with exactly 256 bytes (minimum size with empty strings).
+///
+/// This function provides a workaround by checking the topic ID directly and calling decode,
+/// bypassing the restrictive data length check in the generated match_log function.
 fn decode_token_create_v2(log: &Log) -> Option<events::TokenCreateV2> {
-    // TokenCreateV2 topic ID
+    // TokenCreateV2 topic ID - keccak256 hash of event signature:
+    // "TokenCreateV2(address,address,uint256,uint256,string,string)"
     const TOPIC_ID: [u8; 32] = [
         125u8, 53u8, 97u8, 187u8, 108u8, 65u8, 167u8, 121u8, 111u8, 11u8, 106u8, 155u8, 70u8, 59u8, 75u8, 229u8, 51u8, 51u8, 232u8, 99u8, 57u8, 0u8, 92u8,
         89u8, 111u8, 212u8, 229u8, 245u8, 60u8, 156u8, 200u8, 245u8,
@@ -22,8 +26,13 @@ fn decode_token_create_v2(log: &Log) -> Option<events::TokenCreateV2> {
         return None;
     }
 
-    // Use a more lenient data length check - minimum 192 bytes for the static parameters
-    // The actual minimum with empty strings would be 256 bytes, but we'll be more permissive
+    // Use a lenient data length check - minimum 192 bytes covers:
+    // - 2 addresses (32 bytes each = 64)
+    // - 2 uint256 (32 bytes each = 64)
+    // - 2 string offsets (32 bytes each = 64)
+    // Total: 192 bytes minimum
+    // Note: The actual minimum with empty strings would be 256 bytes (192 + 32 length + 32 length),
+    // but we use 192 to be more permissive and let the decode function handle validation.
     if log.data.len() < 192 {
         return None;
     }
