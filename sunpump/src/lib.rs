@@ -1,9 +1,42 @@
-use common::tron_base58_from_bytes;
 use proto::pb::tron::sunpump::v1 as pb;
-use substreams::Hex;
 use substreams_abis::tvm::sunpump::v1::launchpad::events;
-use substreams_ethereum::pb::eth::v2::Block;
+use substreams_ethereum::pb::eth::v2::{Block, Log};
 use substreams_ethereum::Event;
+
+/// Helper function to decode TokenCreateV2 events with a less restrictive length check.
+/// The generated match_log in substreams-abis uses `< 256` which is too strict and misses
+/// valid events with exactly 256 bytes (minimum size with empty strings).
+fn decode_token_create_v2(log: &Log) -> Option<events::TokenCreateV2> {
+    // TokenCreateV2 topic ID
+    const TOPIC_ID: [u8; 32] = [
+        125u8, 53u8, 97u8, 187u8, 108u8, 65u8, 167u8, 121u8, 111u8, 11u8, 106u8, 155u8, 70u8, 59u8, 75u8, 229u8, 51u8, 51u8, 232u8, 99u8, 57u8, 0u8, 92u8,
+        89u8, 111u8, 212u8, 229u8, 245u8, 60u8, 156u8, 200u8, 245u8,
+    ];
+
+    // Check topic count and ID
+    if log.topics.len() != 1 {
+        return None;
+    }
+
+    if log.topics[0].as_ref() != TOPIC_ID {
+        return None;
+    }
+
+    // Use a more lenient data length check - minimum 192 bytes for the static parameters
+    // The actual minimum with empty strings would be 256 bytes, but we'll be more permissive
+    if log.data.len() < 192 {
+        return None;
+    }
+
+    // Attempt to decode using the generated decode function
+    match events::TokenCreateV2::decode(log) {
+        Ok(event) => Some(event),
+        Err(err) => {
+            substreams::log::info!("TokenCreateV2 event at index {} matched topic but failed to decode: {}", log.block_index, err);
+            None
+        }
+    }
+}
 
 #[substreams::handlers::map]
 fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
@@ -209,7 +242,8 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             }
 
             // TokenCreate event V2
-            if let Some(event) = events::TokenCreateV2::match_and_decode(log) {
+            // Using custom decode function to work around restrictive length check in generated code
+            if let Some(event) = decode_token_create_v2(log) {
                 total_token_create += 1;
                 transaction.logs.push(pb::Log {
                     address: log.address.to_vec(),
