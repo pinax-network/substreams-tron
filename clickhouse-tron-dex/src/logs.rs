@@ -1,6 +1,6 @@
 use common::tron_base58_from_bytes;
 use proto::pb::tron::{justswap, sunpump, sunswap};
-use substreams::pb::substreams::Clock;
+use substreams::{pb::substreams::Clock, Hex};
 
 // Helper functions
 pub fn log_key(clock: &Clock, tx_index: usize, log_index: usize) -> [(&'static str, String); 5] {
@@ -21,7 +21,7 @@ pub fn set_template_log(log: &impl LogAddress, log_index: usize, row: &mut subst
 
     // handle if topic0 exists, else set to empty string
     if let Some(topic0) = log.get_topic0() {
-        row.set("log_topic0", tron_base58_from_bytes(topic0).unwrap());
+        row.set("log_topic0", Hex::encode(topic0));
     } else {
         row.set("log_topic0", "");
     }
