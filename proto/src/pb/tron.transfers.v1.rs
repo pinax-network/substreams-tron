@@ -41,6 +41,10 @@ pub struct Log {
     pub address: ::prost::alloc::vec::Vec<u8>,
     #[prost(uint64, tag="2")]
     pub ordinal: u64,
+    #[prost(bytes="vec", repeated, tag="3")]
+    pub topics: ::prost::alloc::vec::Vec<::prost::alloc::vec::Vec<u8>>,
+    #[prost(bytes="vec", tag="4")]
+    pub data: ::prost::alloc::vec::Vec<u8>,
     #[prost(oneof="log::Log", tags="10")]
     pub log: ::core::option::Option<log::Log>,
 }

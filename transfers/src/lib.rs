@@ -1,7 +1,17 @@
 use proto::pb::tron::transfers::v1 as pb;
 use substreams_abis::evm::token::erc20::events;
-use substreams_ethereum::pb::eth::v2::Block;
+use substreams_ethereum::pb::eth::v2::{Block, Log};
 use substreams_ethereum::Event;
+
+fn create_log(log: &Log, event: pb::log::Log) -> pb::Log {
+    pb::Log {
+        address: log.address.to_vec(),
+        ordinal: log.ordinal,
+        topics: log.topics.iter().map(|t| t.to_vec()).collect(),
+        data: log.data.to_vec(),
+        log: Some(event),
+    }
+}
 
 #[substreams::handlers::map]
 fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
@@ -30,15 +40,12 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             // TRC-20 Transfer event
             if let Some(event) = events::Transfer::match_and_decode(log) {
                 total_trc20_transfers += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::Transfer(pb::Transfer {
-                        from: event.from.to_vec(),
-                        to: event.to.to_vec(),
-                        amount: event.value.to_string(),
-                    })),
+                let event = pb::log::Log::Transfer(pb::Transfer {
+                    from: event.from.to_vec(),
+                    to: event.to.to_vec(),
+                    amount: event.value.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
         }
         // Native transfer

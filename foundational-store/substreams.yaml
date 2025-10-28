@@ -8,9 +8,9 @@ package:
 
 imports:
   # DEX Substreams
-  justswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-justswap-v0.1.1.spkg
-  sunswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunswap-v0.1.1.spkg
-  sunpump: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.1/tron-sunpump-v0.1.1.spkg
+  justswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.4/tron-justswap-v0.1.4.spkg
+  sunswap: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.4/tron-sunswap-v0.1.4.spkg
+  sunpump: https://github.com/pinax-network/substreams-tron/releases/download/tron-clickhouse-dex-v0.1.4/tron-sunpump-v0.1.4.spkg
 
 binaries:
   default:

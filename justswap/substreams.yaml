@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: tron_justswap
-  version: v0.1.1
+  version: v0.1.4
   url: https://github.com/pinax-network/substreams-tron
   description: JustSwap V1 DEX Events
   image: ../image.png

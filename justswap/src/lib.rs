@@ -1,7 +1,17 @@
 use proto::pb::tron::justswap::v1 as pb;
 use substreams_abis::tvm::justswap;
-use substreams_ethereum::pb::eth::v2::Block;
+use substreams_ethereum::pb::eth::v2::{Block, Log};
 use substreams_ethereum::Event;
+
+fn create_log(log: &Log, event: pb::log::Log) -> pb::Log {
+    pb::Log {
+        address: log.address.to_vec(),
+        ordinal: log.ordinal,
+        topics: log.topics.iter().map(|t| t.to_vec()).collect(),
+        data: log.data.to_vec(),
+        log: Some(event),
+    }
+}
 
 #[substreams::handlers::map]
 fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
@@ -22,7 +32,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             to,
             hash: trx.hash.to_vec(),
             nonce: trx.nonce,
-            gas_price: gas_price.to_string(),
+            gas_price,
             gas_limit: trx.gas_limit,
             gas_used: trx.receipt().receipt.cumulative_gas_used,
             value: value.to_string(),
@@ -35,84 +45,66 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             // TokenPurchase event
             if let Some(event) = justswap::v1::exchange::events::TokenPurchase::match_and_decode(log) {
                 total_token_purchases += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TokenPurchase(pb::TokenPurchase {
-                        buyer: event.buyer.to_vec(),
-                        trx_sold: event.trx_sold.to_string(),
-                        tokens_bought: event.tokens_bought.to_string(),
-                    })),
+                let event = pb::log::Log::TokenPurchase(pb::TokenPurchase {
+                    buyer: event.buyer.to_vec(),
+                    trx_sold: event.trx_sold.to_string(),
+                    tokens_bought: event.tokens_bought.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // TrxPurchase event
             if let Some(event) = justswap::v1::exchange::events::TrxPurchase::match_and_decode(log) {
                 total_trx_purchases += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TrxPurchase(pb::TrxPurchase {
-                        buyer: event.buyer.to_vec(),
-                        tokens_sold: event.tokens_sold.to_string(),
-                        trx_bought: event.trx_bought.to_string(),
-                    })),
+                let event = pb::log::Log::TrxPurchase(pb::TrxPurchase {
+                    buyer: event.buyer.to_vec(),
+                    tokens_sold: event.tokens_sold.to_string(),
+                    trx_bought: event.trx_bought.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // AddLiquidity event
             if let Some(event) = justswap::v1::exchange::events::AddLiquidity::match_and_decode(log) {
                 total_add_liquidity += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::AddLiquidity(pb::AddLiquidity {
-                        provider: event.provider.to_vec(),
-                        trx_amount: event.trx_amount.to_string(),
-                        token_amount: event.token_amount.to_string(),
-                    })),
+                let event = pb::log::Log::AddLiquidity(pb::AddLiquidity {
+                    provider: event.provider.to_vec(),
+                    trx_amount: event.trx_amount.to_string(),
+                    token_amount: event.token_amount.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // RemoveLiquidity event
             if let Some(event) = justswap::v1::exchange::events::RemoveLiquidity::match_and_decode(log) {
                 total_remove_liquidity += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::RemoveLiquidity(pb::RemoveLiquidity {
-                        provider: event.provider.to_vec(),
-                        trx_amount: event.trx_amount.to_string(),
-                        token_amount: event.token_amount.to_string(),
-                    })),
+                let event = pb::log::Log::RemoveLiquidity(pb::RemoveLiquidity {
+                    provider: event.provider.to_vec(),
+                    trx_amount: event.trx_amount.to_string(),
+                    token_amount: event.token_amount.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // Snapshot event
             if let Some(event) = justswap::v1::exchange::events::Snapshot::match_and_decode(log) {
                 total_snapshot += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::Snapshot(pb::Snapshot {
-                        operator: event.operator.to_vec(),
-                        trx_balance: event.trx_balance.to_string(),
-                        token_balance: event.token_balance.to_string(),
-                    })),
+                let event = pb::log::Log::Snapshot(pb::Snapshot {
+                    operator: event.operator.to_vec(),
+                    trx_balance: event.trx_balance.to_string(),
+                    token_balance: event.token_balance.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // NewExchange event
             if let Some(event) = justswap::v1::factory::events::NewExchange::match_and_decode(log) {
                 total_new_exchanges += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::NewExchange(pb::NewExchange {
-                        exchange: event.exchange.to_vec(),
-                        token: event.token.to_vec(),
-                    })),
+                let event = pb::log::Log::NewExchange(pb::NewExchange {
+                    exchange: event.exchange.to_vec(),
+                    token: event.token.to_vec(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
         }
 

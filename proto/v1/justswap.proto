@@ -19,6 +19,8 @@ message Transaction {
 message Log {
   bytes address = 1;
   uint64 ordinal = 2;
+  repeated bytes topics = 3;
+  bytes data = 4;
   oneof log {
     TokenPurchase token_purchase = 10;
     TrxPurchase trx_purchase = 11;
