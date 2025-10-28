@@ -133,6 +133,7 @@ dependencies = [
  "hex",
  "sha2",
  "substreams",
+ "substreams-ethereum",
 ]
 
 [[package]]

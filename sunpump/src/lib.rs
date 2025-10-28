@@ -1,9 +1,17 @@
-use common::tron_base58_from_bytes;
 use proto::pb::tron::sunpump::v1 as pb;
-use substreams::Hex;
 use substreams_abis::tvm::sunpump::v1::launchpad::events;
-use substreams_ethereum::pb::eth::v2::Block;
+use substreams_ethereum::pb::eth::v2::{Block, Log};
 use substreams_ethereum::Event;
+
+fn create_log(log: &Log, event: pb::log::Log) -> pb::Log {
+    pb::Log {
+        address: log.address.to_vec(),
+        ordinal: log.ordinal,
+        topics: log.topics.iter().map(|t| t.to_vec()).collect(),
+        data: log.data.to_vec(),
+        log: Some(event),
+    }
+}
 
 #[substreams::handlers::map]
 fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
@@ -31,7 +39,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
             to,
             hash: trx.hash.to_vec(),
             nonce: trx.nonce,
-            gas_price: gas_price.to_string(),
+            gas_price,
             gas_limit: trx.gas_limit,
             gas_used: trx.receipt().receipt.cumulative_gas_used,
             value: value.to_string(),
@@ -41,231 +49,167 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
         for log_view in trx.receipt().logs() {
             let log = log_view.log;
 
-            // let address = tron_base58_from_bytes(&log.address).unwrap();
-            // if address != "TEPcBKJB7N6rF9xKQKPVeSrscsRTfsVFVi" {
-            //     // Skip SunPump Token contract logs
-            //     continue;
-            // }
-
-            // substreams::log::info!("trx = {}", Hex::encode(&trx.hash));
-            // substreams::log::info!("log.address = {}", address);
-            // if log.topics.len() > 0 {
-            //     substreams::log::info!("log.topics[0] = {}", Hex::encode(&log.topics[0]));
-            // }
-            // if log.topics.len() > 1 {
-            //     substreams::log::info!("log.topics[1] = {}", Hex::encode(&log.topics[1]));
-            // }
-            // if log.topics.len() > 2 {
-            //     substreams::log::info!("log.topics[2] = {}", Hex::encode(&log.topics[2]));
-            // }
-            // substreams::log::info!("log.data = {}\n", Hex::encode(&log.data));
-
             // LaunchPending event
             if let Some(event) = events::LaunchPending::match_and_decode(log) {
                 total_launch_pending += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::LaunchPending(pb::LaunchPending { token: event.token.to_vec() })),
-                });
+                let event = pb::log::Log::LaunchPending(pb::LaunchPending { token: event.token.to_vec() });
+                transaction.logs.push(create_log(log, event));
             }
 
             // LauncherChanged event
             if let Some(event) = events::LauncherChanged::match_and_decode(log) {
                 total_launcher_changed += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::LauncherChanged(pb::LauncherChanged {
-                        old_launcher: event.old_launcher.to_vec(),
-                        new_launcher: event.new_launcher.to_vec(),
-                    })),
+                let event = pb::log::Log::LauncherChanged(pb::LauncherChanged {
+                    old_launcher: event.old_launcher.to_vec(),
+                    new_launcher: event.new_launcher.to_vec(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // MinTxFeeSet event
             if let Some(event) = events::MinTxFeeSet::match_and_decode(log) {
                 total_min_tx_fee_set += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::MinTxFeeSet(pb::MinTxFeeSet {
-                        old_fee: event.old_fee.to_string(),
-                        new_fee: event.new_fee.to_string(),
-                    })),
+                let event = pb::log::Log::MinTxFeeSet(pb::MinTxFeeSet {
+                    old_fee: event.old_fee.to_string(),
+                    new_fee: event.new_fee.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // MintFeeSet event
             if let Some(event) = events::MintFeeSet::match_and_decode(log) {
                 total_mint_fee_set += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::MintFeeSet(pb::MintFeeSet {
-                        old_fee: event.old_fee.to_string(),
-                        new_fee: event.new_fee.to_string(),
-                    })),
+                let event = pb::log::Log::MintFeeSet(pb::MintFeeSet {
+                    old_fee: event.old_fee.to_string(),
+                    new_fee: event.new_fee.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // OperatorChanged event
             if let Some(event) = events::OperatorChanged::match_and_decode(log) {
                 total_operator_changed += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::OperatorChanged(pb::OperatorChanged {
-                        old_operator: event.old_operator.to_vec(),
-                        new_operator: event.new_operator.to_vec(),
-                    })),
+                let event = pb::log::Log::OperatorChanged(pb::OperatorChanged {
+                    old_operator: event.old_operator.to_vec(),
+                    new_operator: event.new_operator.to_vec(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // OwnerChanged event
             if let Some(event) = events::OwnerChanged::match_and_decode(log) {
                 total_owner_changed += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::OwnerChanged(pb::OwnerChanged {
-                        old_owner: event.old_owner.to_vec(),
-                        new_owner: event.new_owner.to_vec(),
-                    })),
+                let event = pb::log::Log::OwnerChanged(pb::OwnerChanged {
+                    old_owner: event.old_owner.to_vec(),
+                    new_owner: event.new_owner.to_vec(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // PendingOwnerSet event
             if let Some(event) = events::PendingOwnerSet::match_and_decode(log) {
                 total_pending_owner_set += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::PendingOwnerSet(pb::PendingOwnerSet {
-                        old_pending_owner: event.old_pending_owner.to_vec(),
-                        new_pending_owner: event.new_pending_owner.to_vec(),
-                    })),
+                let event = pb::log::Log::PendingOwnerSet(pb::PendingOwnerSet {
+                    old_pending_owner: event.old_pending_owner.to_vec(),
+                    new_pending_owner: event.new_pending_owner.to_vec(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // PurchaseFeeSet event
             if let Some(event) = events::PurchaseFeeSet::match_and_decode(log) {
                 total_purchase_fee_set += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::PurchaseFeeSet(pb::PurchaseFeeSet {
-                        old_fee: event.old_fee.to_string(),
-                        new_fee: event.new_fee.to_string(),
-                    })),
+                let event = pb::log::Log::PurchaseFeeSet(pb::PurchaseFeeSet {
+                    old_fee: event.old_fee.to_string(),
+                    new_fee: event.new_fee.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // SaleFeeSet event
             if let Some(event) = events::SaleFeeSet::match_and_decode(log) {
                 total_sale_fee_set += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::SaleFeeSet(pb::SaleFeeSet {
-                        old_fee: event.old_fee.to_string(),
-                        new_fee: event.new_fee.to_string(),
-                    })),
+                let event = pb::log::Log::SaleFeeSet(pb::SaleFeeSet {
+                    old_fee: event.old_fee.to_string(),
+                    new_fee: event.new_fee.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // TokenCreate event
             if let Some(event) = events::TokenCreate::match_and_decode(log) {
                 total_token_create += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TokenCreate(pb::TokenCreate {
-                        token_address: event.token_address.to_vec(),
-                        token_index: event.token_index.to_string(),
-                        creator: event.creator.to_vec(),
-                        initial_supply: None,
-                        name: None,
-                        symbol: None,
-                    })),
+                let event = pb::log::Log::TokenCreate(pb::TokenCreate {
+                    token_address: event.token_address.to_vec(),
+                    token_index: event.token_index.to_string(),
+                    creator: event.creator.to_vec(),
+                    initial_supply: None,
+                    name: None,
+                    symbol: None,
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // TokenCreate event V1
             if let Some(event) = events::TokenCreateV1::match_and_decode(log) {
                 total_token_create += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TokenCreate(pb::TokenCreate {
-                        token_address: event.token_address.to_vec(),
-                        token_index: event.token_index.to_string(),
-                        creator: event.creator.to_vec(),
-                        initial_supply: None,
-                        name: None,
-                        symbol: None,
-                    })),
+                let event = pb::log::Log::TokenCreate(pb::TokenCreate {
+                    token_address: event.token_address.to_vec(),
+                    token_index: event.token_index.to_string(),
+                    creator: event.creator.to_vec(),
+                    initial_supply: None,
+                    name: None,
+                    symbol: None,
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // TokenCreate event V2
-            if let Some(event) = events::TokenCreateV2::match_and_decode(log) {
+            if let Ok(event) = events::TokenCreateV2::decode(log) {
                 total_token_create += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TokenCreate(pb::TokenCreate {
-                        token_address: event.token_address.to_vec(),
-                        token_index: event.token_index.to_string(),
-                        creator: event.creator.to_vec(),
-                        initial_supply: Some(event.initial_supply.to_string()),
-                        name: Some(event.name),
-                        symbol: Some(event.symbol),
-                    })),
+                let event = pb::log::Log::TokenCreate(pb::TokenCreate {
+                    token_address: event.token_address.to_vec(),
+                    token_index: event.token_index.to_string(),
+                    creator: event.creator.to_vec(),
+                    initial_supply: Some(event.initial_supply.to_string()),
+                    name: Some(event.name),
+                    symbol: Some(event.symbol),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // TokenLaunched event
             if let Some(event) = events::TokenLaunched::match_and_decode(log) {
                 total_token_launched += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TokenLaunched(pb::TokenLaunched { token: event.token.to_vec() })),
-                });
+                let event = pb::log::Log::TokenLaunched(pb::TokenLaunched { token: event.token.to_vec() });
+                transaction.logs.push(create_log(log, event));
             }
 
             // TokenPurchased event
             if let Some(event) = events::TokenPurchased::match_and_decode(log) {
                 total_token_purchased += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TokenPurchased(pb::TokenPurchased {
-                        token: event.token.to_vec(),
-                        buyer: event.buyer.to_vec(),
-                        trx_amount: event.trx_amount.to_string(),
-                        fee: event.fee.to_string(),
-                        token_amount: event.token_amount.to_string(),
-                        token_reserve: event.token_reserve.to_string(),
-                    })),
+                let event = pb::log::Log::TokenPurchased(pb::TokenPurchased {
+                    token: event.token.to_vec(),
+                    buyer: event.buyer.to_vec(),
+                    trx_amount: event.trx_amount.to_string(),
+                    fee: event.fee.to_string(),
+                    token_amount: event.token_amount.to_string(),
+                    token_reserve: event.token_reserve.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
 
             // TokenSold event
             if let Some(event) = events::TokenSold::match_and_decode(log) {
                 total_token_sold += 1;
-                transaction.logs.push(pb::Log {
-                    address: log.address.to_vec(),
-                    ordinal: log.ordinal,
-                    log: Some(pb::log::Log::TokenSold(pb::TokenSold {
-                        token: event.token.to_vec(),
-                        seller: event.seller.to_vec(),
-                        trx_amount: event.trx_amount.to_string(),
-                        fee: event.fee.to_string(),
-                        token_amount: event.token_amount.to_string(),
-                    })),
+                let event = pb::log::Log::TokenSold(pb::TokenSold {
+                    token: event.token.to_vec(),
+                    seller: event.seller.to_vec(),
+                    trx_amount: event.trx_amount.to_string(),
+                    fee: event.fee.to_string(),
+                    token_amount: event.token_amount.to_string(),
                 });
+                transaction.logs.push(create_log(log, event));
             }
         }
 

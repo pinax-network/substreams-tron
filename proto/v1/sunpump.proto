@@ -19,6 +19,8 @@ message Transaction {
 message Log {
   bytes address = 1;
   uint64 ordinal = 2;
+  repeated bytes topics = 3;
+  bytes data = 4;
   oneof log {
     LaunchPending launch_pending = 10;
     LauncherChanged launcher_changed = 11;
