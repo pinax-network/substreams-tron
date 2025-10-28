@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: tron_foundational_store
-  version: v0.1.3
+  version: v0.1.4
   url: https://github.com/pinax-network/substreams-tron
   description: Tron Foundational Store
   image: ../image.png
@@ -33,7 +33,7 @@ modules:
       - map: justswap:map_events
       - map: sunpump:map_events
     output:
-      type: proto:sf.substreams.foundational_store.v1.Entries
+      type: proto:sf.substreams.foundational_store.model.v1.SinkEntries
 
   - name: store_pair_created
     kind: store

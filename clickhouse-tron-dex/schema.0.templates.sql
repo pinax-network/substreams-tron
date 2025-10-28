@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     log_index                   UInt32, -- derived from Substreams
     log_address                 String,
     log_ordinal                 UInt32,
+    log_topic0                  String,
 
     -- indexes --
     INDEX idx_timestamp         (timestamp)         TYPE minmax                 GRANULARITY 1,
@@ -39,7 +40,8 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
 
     -- indexes (log) --
     INDEX idx_log_address       (log_address)           TYPE bloom_filter           GRANULARITY 1,
-    INDEX idx_log_ordinal       (log_ordinal)           TYPE minmax                 GRANULARITY 1
+    INDEX idx_log_ordinal       (log_ordinal)           TYPE minmax                 GRANULARITY 1,
+    INDEX idx_log_topic0        (log_topic0)            TYPE bloom_filter           GRANULARITY 1
 )
 ENGINE = ReplacingMergeTree
 ORDER BY (
