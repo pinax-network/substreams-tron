@@ -92,7 +92,7 @@ pub fn store_pair_created(sunswap: pb::sunswap::v1::Events, store: StoreSetProto
                     token0: pair_created.token0.clone(),
                     token1: pair_created.token1.clone(),
                 };
-                store.set(log.ordinal, Hex::encode(&pair_created.pair), &payload);
+                store.set(1, Hex::encode(&pair_created.pair), &payload);
             }
         }
     }
@@ -109,7 +109,7 @@ pub fn store_new_exchange(justswap: pb::justswap::v1::Events, store: StoreSetPro
                     factory: log.address.clone(),
                     token: new_exchange.token.clone(),
                 };
-                store.set(log.ordinal, Hex::encode(&new_exchange.exchange), &payload);
+                store.set(1, Hex::encode(&new_exchange.exchange), &payload);
             }
         }
     }
@@ -127,7 +127,7 @@ pub fn store_token_create(sunpump: pb::sunpump::v1::Events, store: StoreSetProto
                     token_index: token_create.token_index.clone(),
                     creator: token_create.creator.clone(),
                 };
-                store.set(log.ordinal, Hex::encode(&token_create.token_address), &payload);
+                store.set(1, Hex::encode(&token_create.token_address), &payload);
             }
         }
     }

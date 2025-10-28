@@ -1,4 +1,6 @@
+use common::tron_base58_from_bytes;
 use proto::pb::tron::sunpump::v1 as pb;
+use substreams::Hex;
 use substreams_abis::tvm::sunpump::v1::launchpad::events;
 use substreams_ethereum::pb::eth::v2::Block;
 use substreams_ethereum::Event;
@@ -38,6 +40,25 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
 
         for log_view in trx.receipt().logs() {
             let log = log_view.log;
+
+            // let address = tron_base58_from_bytes(&log.address).unwrap();
+            // if address != "TEPcBKJB7N6rF9xKQKPVeSrscsRTfsVFVi" {
+            //     // Skip SunPump Token contract logs
+            //     continue;
+            // }
+
+            // substreams::log::info!("trx = {}", Hex::encode(&trx.hash));
+            // substreams::log::info!("log.address = {}", address);
+            // if log.topics.len() > 0 {
+            //     substreams::log::info!("log.topics[0] = {}", Hex::encode(&log.topics[0]));
+            // }
+            // if log.topics.len() > 1 {
+            //     substreams::log::info!("log.topics[1] = {}", Hex::encode(&log.topics[1]));
+            // }
+            // if log.topics.len() > 2 {
+            //     substreams::log::info!("log.topics[2] = {}", Hex::encode(&log.topics[2]));
+            // }
+            // substreams::log::info!("log.data = {}\n", Hex::encode(&log.data));
 
             // LaunchPending event
             if let Some(event) = events::LaunchPending::match_and_decode(log) {
@@ -163,6 +184,43 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
                         token_address: event.token_address.to_vec(),
                         token_index: event.token_index.to_string(),
                         creator: event.creator.to_vec(),
+                        initial_supply: None,
+                        name: None,
+                        symbol: None,
+                    })),
+                });
+            }
+
+            // TokenCreate event V1
+            if let Some(event) = events::TokenCreateV1::match_and_decode(log) {
+                total_token_create += 1;
+                transaction.logs.push(pb::Log {
+                    address: log.address.to_vec(),
+                    ordinal: log.ordinal,
+                    log: Some(pb::log::Log::TokenCreate(pb::TokenCreate {
+                        token_address: event.token_address.to_vec(),
+                        token_index: event.token_index.to_string(),
+                        creator: event.creator.to_vec(),
+                        initial_supply: None,
+                        name: None,
+                        symbol: None,
+                    })),
+                });
+            }
+
+            // TokenCreate event V2
+            if let Some(event) = events::TokenCreateV2::match_and_decode(log) {
+                total_token_create += 1;
+                transaction.logs.push(pb::Log {
+                    address: log.address.to_vec(),
+                    ordinal: log.ordinal,
+                    log: Some(pb::log::Log::TokenCreate(pb::TokenCreate {
+                        token_address: event.token_address.to_vec(),
+                        token_index: event.token_index.to_string(),
+                        creator: event.creator.to_vec(),
+                        initial_supply: Some(event.initial_supply.to_string()),
+                        name: Some(event.name),
+                        symbol: Some(event.symbol),
                     })),
                 });
             }

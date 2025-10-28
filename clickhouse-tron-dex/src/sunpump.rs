@@ -98,7 +98,7 @@ fn process_sunpump_token_purchased(
     set_template_log(log, log_index, row);
 
     // Set TokenCreate event data
-    set_token_create(get_token_create(store, &log.address), row);
+    set_token_create(get_token_create(store, &purchase.token), row);
 
     // Swap info - TRX -> Token purchase
     row.set("buyer", tron_base58_from_bytes(&purchase.buyer).unwrap());
@@ -128,7 +128,7 @@ fn process_sunpump_token_sold(
     set_template_log(log, log_index, row);
 
     // Set TokenCreate event data
-    set_token_create(get_token_create(store, &log.address), row);
+    set_token_create(get_token_create(store, &sold.token), row);
 
     // Swap info - Token -> TRX sale
     row.set("seller", tron_base58_from_bytes(&sold.seller).unwrap());

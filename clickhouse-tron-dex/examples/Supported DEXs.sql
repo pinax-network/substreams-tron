@@ -31,6 +31,7 @@ WITH all_dexes AS (
 )
 SELECT * FROM all_dexes
 ORDER BY transactions DESC
+LIMIT 20
 
 -- TEST with swaps --
 SELECT

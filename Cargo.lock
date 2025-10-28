@@ -1180,9 +1180,9 @@ dependencies = [
 
 [[package]]
 name = "substreams-abis"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69c3fdfbfdf78a3c6cf73f800524fedd83af80cf367b71c03c6f161dc748a060"
+checksum = "1288102ae2e832a50edacfd423deda017d2a739845d6ba56055cef2d7b43f9df"
 dependencies = [
  "anyhow",
  "ethabi 18.0.0",
@@ -1283,6 +1283,7 @@ dependencies = [
 name = "sunpump"
 version = "0.0.0"
 dependencies = [
+ "common",
  "prost 0.13.5",
  "proto",
  "substreams",

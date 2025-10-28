@@ -36,9 +36,7 @@ message Log {
   }
 }
 
-message LaunchPending {
-  bytes token = 1;
-}
+message LaunchPending { bytes token = 1; }
 
 message LauncherChanged {
   bytes old_launcher = 1;
@@ -84,11 +82,12 @@ message TokenCreate {
   bytes token_address = 1;
   string token_index = 2; // uint256
   bytes creator = 3;
+  optional string initial_supply = 4; // uint256
+  optional string name = 5;
+  optional string symbol = 6;
 }
 
-message TokenLaunched {
-  bytes token = 1;
-}
+message TokenLaunched { bytes token = 1; }
 
 message TokenPurchased {
   bytes token = 1;

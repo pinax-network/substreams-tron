@@ -25,7 +25,7 @@ license = "Apache-2.0"
 
 [workspace.dependencies]
 substreams = "0.6.4"
-substreams-abis = "0.5.2"
+substreams-abis = "0.5.3"
 substreams-ethereum = "0.10.6"
 substreams-database-change = "2.1.2"
 prost = "0.13"

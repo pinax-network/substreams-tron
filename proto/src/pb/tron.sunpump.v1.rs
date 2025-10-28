@@ -161,6 +161,13 @@ pub struct TokenCreate {
     pub token_index: ::prost::alloc::string::String,
     #[prost(bytes="vec", tag="3")]
     pub creator: ::prost::alloc::vec::Vec<u8>,
+    /// uint256
+    #[prost(string, optional, tag="4")]
+    pub initial_supply: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="5")]
+    pub name: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag="6")]
+    pub symbol: ::core::option::Option<::prost::alloc::string::String>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

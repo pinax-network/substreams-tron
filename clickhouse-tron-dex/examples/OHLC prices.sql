@@ -1,3 +1,11 @@
+-- Detect time intervals --
+SELECT
+    interval_min,
+    count() AS intervals_count
+FROM ohlc_prices
+GROUP BY interval_min
+ORDER BY interval_min;
+
 -- OHLC Prices by Pool --
 WITH (
       pow(10, 6) AS scale0,
