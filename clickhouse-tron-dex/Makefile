@@ -1,7 +1,7 @@
 ENDPOINT ?= tronevm.substreams.pinax.network:443
 # ENDPOINT ?= tronevm-sf-substreams-tier1-v1.riv-sst2.pinax.io:443
 START_BLOCK ?= 73000000
-STOP_BLOCK ?= 73001000
+STOP_BLOCK ?= +10000
 PARALLEL_JOBS ?= 500
 
 .PHONY: build

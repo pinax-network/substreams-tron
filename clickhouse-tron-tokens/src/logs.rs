@@ -1,30 +1,6 @@
 use common::tron_base58_from_bytes;
 use proto::pb::tron::transfers::v1 as pb;
-use substreams::pb::substreams::Clock;
-use substreams_database_change::tables::Tables;
-
-use crate::{set_clock, transactions::set_template_tx};
-
-pub fn process_events(tables: &mut Tables, clock: &Clock, events: &pb::Events) {
-    for (tx_index, tx) in events.transactions.iter().enumerate() {
-        for (log_index, log) in tx.logs.iter().enumerate() {
-            if let Some(pb::log::Log::Transfer(transfer)) = &log.log {
-                let key = log_key(clock, tx_index, log_index);
-                let row = tables.create_row("trc20_transfer", key);
-
-                // TEMPLATE
-                set_clock(clock, row);
-                set_template_log(log, log_index, row);
-                set_template_tx(tx, tx_index, row);
-
-                // Transfer
-                row.set("from", tron_base58_from_bytes(&transfer.from).unwrap());
-                row.set("to", tron_base58_from_bytes(&transfer.to).unwrap());
-                row.set("amount", &transfer.amount);
-            }
-        }
-    }
-}
+use substreams::{pb::substreams::Clock, Hex};
 
 pub fn log_key(clock: &Clock, tx_index: usize, log_index: usize) -> [(&'static str, String); 5] {
     let seconds = clock.timestamp.as_ref().expect("clock.timestamp is required").seconds;
@@ -37,8 +13,40 @@ pub fn log_key(clock: &Clock, tx_index: usize, log_index: usize) -> [(&'static s
     ]
 }
 
-fn set_template_log(log: &pb::Log, log_index: usize, row: &mut substreams_database_change::tables::Row) {
+pub fn set_template_log(log: &impl LogAddress, log_index: usize, row: &mut substreams_database_change::tables::Row) {
     row.set("log_index", log_index as u32);
-    row.set("log_address", tron_base58_from_bytes(&log.address).unwrap());
-    row.set("log_ordinal", log.ordinal);
+    row.set("log_address", tron_base58_from_bytes(log.get_address()).unwrap());
+    row.set("log_ordinal", log.get_ordinal());
+
+    // handle if topic0 exists, else set to empty string
+    if let Some(topic0) = log.get_topic0() {
+        row.set("log_topic0", Hex::encode(topic0));
+    } else {
+        row.set("log_topic0", "");
+    }
+}
+// Trait to abstract over different log types
+pub trait LogAddress {
+    fn get_address(&self) -> &Vec<u8>;
+    fn get_ordinal(&self) -> u64;
+    fn get_topics(&self) -> &Vec<Vec<u8>>;
+    fn get_topic0(&self) -> Option<&Vec<u8>> {
+        self.get_topics().get(0)
+    }
+    fn _get_data(&self) -> &Vec<u8>;
+}
+
+impl LogAddress for pb::Log {
+    fn get_address(&self) -> &Vec<u8> {
+        &self.address
+    }
+    fn get_ordinal(&self) -> u64 {
+        self.ordinal
+    }
+    fn get_topics(&self) -> &Vec<Vec<u8>> {
+        &self.topics
+    }
+    fn _get_data(&self) -> &Vec<u8> {
+        &self.data
+    }
 }

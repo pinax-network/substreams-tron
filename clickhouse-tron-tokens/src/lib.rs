@@ -1,5 +1,7 @@
 mod logs;
+mod native_transfers;
 mod transactions;
+mod trc20_transfers;
 use substreams::pb::substreams::Clock;
 
 use proto::pb::tron as pb;
@@ -11,10 +13,10 @@ pub fn db_out(clock: Clock, transfers: pb::transfers::v1::Events) -> Result<Data
     let mut tables = substreams_database_change::tables::Tables::new();
 
     // Process logs (TRC20 transfers)
-    logs::process_events(&mut tables, &clock, &transfers);
+    trc20_transfers::process_events(&mut tables, &clock, &transfers);
 
     // Process transactions (Native transfers)
-    transactions::process_events(&mut tables, &clock, &transfers);
+    native_transfers::process_events(&mut tables, &clock, &transfers);
 
     // ONLY include blocks if events are present
     if !tables.tables.is_empty() {
