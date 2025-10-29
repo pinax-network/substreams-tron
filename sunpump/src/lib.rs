@@ -1,5 +1,6 @@
 use proto::pb::tron::sunpump::v1 as pb;
-use substreams_abis::tvm::sunpump::v1::launchpad::events;
+use substreams_abis::tvm::sunpump::legacy::launchpad::events::TokenCreate as TokenCreateLegacy;
+use substreams_abis::tvm::sunpump::v1::launchpadproxy::events;
 use substreams_ethereum::pb::eth::v2::{Block, Log};
 use substreams_ethereum::Event;
 
@@ -48,6 +49,31 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
 
         for log_view in trx.receipt().logs() {
             let log = log_view.log;
+
+            // TokenCreate event
+            if let Some(event) = events::TokenCreate::match_and_decode(log) {
+                total_token_create += 1;
+                let event = pb::log::Log::TokenCreate(pb::TokenCreate {
+                    token_address: event.token_address.to_vec(),
+                    token_index: event.token_index.to_string(),
+                    creator: event.creator.to_vec(),
+                });
+                transaction.logs.push(create_log(log, event));
+            }
+
+            // Legacy - TokenCreate event
+            if let Some(event) = TokenCreateLegacy::match_and_decode(log) {
+                total_token_create += 1;
+                let event = pb::log::Log::TokenCreateLegacy(pb::TokenCreateLegacy {
+                    token_address: event.token_address.to_vec(),
+                    creator: event.creator.to_vec(),
+                    nft_threshold: event.nft_threshold.to_u64(),
+                    nft_max_supply: event.nft_max_supply.to_u64(),
+                    name: event.name,
+                    symbol: event.symbol,
+                });
+                transaction.logs.push(create_log(log, event));
+            }
 
             // LaunchPending event
             if let Some(event) = events::LaunchPending::match_and_decode(log) {
@@ -132,48 +158,6 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
                 let event = pb::log::Log::SaleFeeSet(pb::SaleFeeSet {
                     old_fee: event.old_fee.to_string(),
                     new_fee: event.new_fee.to_string(),
-                });
-                transaction.logs.push(create_log(log, event));
-            }
-
-            // TokenCreate event
-            if let Some(event) = events::TokenCreate::match_and_decode(log) {
-                total_token_create += 1;
-                let event = pb::log::Log::TokenCreate(pb::TokenCreate {
-                    token_address: event.token_address.to_vec(),
-                    token_index: event.token_index.to_string(),
-                    creator: event.creator.to_vec(),
-                    initial_supply: None,
-                    name: None,
-                    symbol: None,
-                });
-                transaction.logs.push(create_log(log, event));
-            }
-
-            // TokenCreate event V1
-            if let Some(event) = events::TokenCreateV1::match_and_decode(log) {
-                total_token_create += 1;
-                let event = pb::log::Log::TokenCreate(pb::TokenCreate {
-                    token_address: event.token_address.to_vec(),
-                    token_index: event.token_index.to_string(),
-                    creator: event.creator.to_vec(),
-                    initial_supply: None,
-                    name: None,
-                    symbol: None,
-                });
-                transaction.logs.push(create_log(log, event));
-            }
-
-            // TokenCreate event V2
-            if let Ok(event) = events::TokenCreateV2::decode(log) {
-                total_token_create += 1;
-                let event = pb::log::Log::TokenCreate(pb::TokenCreate {
-                    token_address: event.token_address.to_vec(),
-                    token_index: event.token_index.to_string(),
-                    creator: event.creator.to_vec(),
-                    initial_supply: Some(event.initial_supply.to_string()),
-                    name: Some(event.name),
-                    symbol: Some(event.symbol),
                 });
                 transaction.logs.push(create_log(log, event));
             }

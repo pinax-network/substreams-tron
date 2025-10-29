@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: tron_sunpump
-  version: v0.1.4
+  version: v0.1.5
   url: https://github.com/pinax-network/substreams-tron
   description: SunPump LaunchPad Events
   image: ../image.png

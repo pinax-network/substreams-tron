@@ -41,7 +41,7 @@ pub struct Log {
     pub topics: ::prost::alloc::vec::Vec<::prost::alloc::vec::Vec<u8>>,
     #[prost(bytes="vec", tag="4")]
     pub data: ::prost::alloc::vec::Vec<u8>,
-    #[prost(oneof="log::Log", tags="10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22")]
+    #[prost(oneof="log::Log", tags="10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23")]
     pub log: ::core::option::Option<log::Log>,
 }
 /// Nested message and enum types in `Log`.
@@ -70,10 +70,12 @@ pub mod log {
         #[prost(message, tag="19")]
         TokenCreate(super::TokenCreate),
         #[prost(message, tag="20")]
-        TokenLaunched(super::TokenLaunched),
+        TokenCreateLegacy(super::TokenCreateLegacy),
         #[prost(message, tag="21")]
-        TokenPurchased(super::TokenPurchased),
+        TokenLaunched(super::TokenLaunched),
         #[prost(message, tag="22")]
+        TokenPurchased(super::TokenPurchased),
+        #[prost(message, tag="23")]
         TokenSold(super::TokenSold),
     }
 }
@@ -165,13 +167,22 @@ pub struct TokenCreate {
     pub token_index: ::prost::alloc::string::String,
     #[prost(bytes="vec", tag="3")]
     pub creator: ::prost::alloc::vec::Vec<u8>,
-    /// uint256
-    #[prost(string, optional, tag="4")]
-    pub initial_supply: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(string, optional, tag="5")]
-    pub name: ::core::option::Option<::prost::alloc::string::String>,
-    #[prost(string, optional, tag="6")]
-    pub symbol: ::core::option::Option<::prost::alloc::string::String>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TokenCreateLegacy {
+    #[prost(bytes="vec", tag="1")]
+    pub token_address: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="vec", tag="3")]
+    pub creator: ::prost::alloc::vec::Vec<u8>,
+    #[prost(uint64, tag="2")]
+    pub nft_threshold: u64,
+    #[prost(uint64, tag="4")]
+    pub nft_max_supply: u64,
+    #[prost(string, tag="5")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(string, tag="6")]
+    pub symbol: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

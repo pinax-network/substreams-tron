@@ -1181,9 +1181,9 @@ dependencies = [
 
 [[package]]
 name = "substreams-abis"
-version = "0.5.3"
+version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1288102ae2e832a50edacfd423deda017d2a739845d6ba56055cef2d7b43f9df"
+checksum = "9f303684f285d28f87803cc9d360ba4a77e201dbf3fbb09e90c81b02be3280cf"
 dependencies = [
  "anyhow",
  "ethabi 18.0.0",

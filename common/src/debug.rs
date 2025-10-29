@@ -8,6 +8,7 @@ pub fn _debug_log(trx: &TransactionTrace, log: &Log) {
 
     substreams::log::info!("trx = {}", Hex::encode(&trx.hash));
     substreams::log::info!("log.address = {}", address);
+    substreams::log::info!("log.data.len() = {}", log.data.len());
     if log.topics.len() > 0 {
         substreams::log::info!("log.topics[0] = {}", Hex::encode(&log.topics[0]));
     }
