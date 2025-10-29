@@ -1,8 +1,5 @@
 use common::tron_base58_from_bytes;
-use proto::pb::tron::{
-    foundational_store::v1::TokenCreate,
-    sunpump::{self, v1::TokenCreateLegacy},
-};
+use proto::pb::tron::{foundational_store::v1::TokenCreate, sunpump};
 use substreams::{pb::substreams::Clock, store::StoreGetProto};
 use substreams_database_change::tables::Tables;
 
@@ -53,6 +50,9 @@ pub fn process_events(tables: &mut Tables, clock: &Clock, events: &sunpump::v1::
                 }
                 Some(sunpump::v1::log::Log::TokenCreate(event)) => {
                     process_sunpump_token_create(tables, clock, tx, log, tx_index, log_index, event);
+                }
+                Some(sunpump::v1::log::Log::TokenCreateLegacy(event)) => {
+                    process_sunpump_token_create_legacy(tables, clock, tx, log, tx_index, log_index, event);
                 }
                 Some(sunpump::v1::log::Log::TokenLaunched(event)) => {
                     process_sunpump_token_launched(tables, clock, tx, log, tx_index, log_index, event);
@@ -359,6 +359,32 @@ fn process_sunpump_token_create(
     row.set("token_address", tron_base58_from_bytes(&event.token_address).unwrap());
     row.set("token_index", &event.token_index);
     row.set("creator", tron_base58_from_bytes(&event.creator).unwrap());
+}
+
+fn process_sunpump_token_create_legacy(
+    tables: &mut Tables,
+    clock: &Clock,
+    tx: &sunpump::v1::Transaction,
+    log: &sunpump::v1::Log,
+    tx_index: usize,
+    log_index: usize,
+    event: &sunpump::v1::TokenCreateLegacy,
+) {
+    let key = log_key(clock, tx_index, log_index);
+    let row = tables.create_row("sunpump_token_create_legacy", key);
+
+    // Block and transaction info
+    set_clock(clock, row);
+    set_template_tx(tx, tx_index, row);
+    set_template_log(log, log_index, row);
+
+    // Event info
+    row.set("token_address", tron_base58_from_bytes(&event.token_address).unwrap());
+    row.set("creator", tron_base58_from_bytes(&event.creator).unwrap());
+    row.set("nft_max_supply", event.nft_max_supply);
+    row.set("nft_threshold", event.nft_threshold);
+    row.set("name", &event.name);
+    row.set("symbol", &event.symbol);
 }
 
 fn process_sunpump_token_launched(

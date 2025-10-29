@@ -176,6 +176,26 @@ ALTER TABLE sunpump_token_create
     ADD INDEX IF NOT EXISTS idx_token_index (token_index) TYPE minmax GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_creator (creator) TYPE bloom_filter GRANULARITY 1;
 
+-- SunPump TokenCreateLegacy --
+CREATE TABLE IF NOT EXISTS sunpump_token_create_legacy AS TEMPLATE_LOG
+COMMENT 'SunPump TokenCreate - Legacy events';
+ALTER TABLE sunpump_token_create_legacy
+    -- event information --
+    ADD COLUMN IF NOT EXISTS token_address      LowCardinality(String) COMMENT 'Token contract address',
+    ADD COLUMN IF NOT EXISTS creator            String COMMENT 'Creator address',
+    ADD COLUMN IF NOT EXISTS nft_max_supply     UInt256 COMMENT 'Max NFT supply',
+    ADD COLUMN IF NOT EXISTS nft_threshold      UInt256 COMMENT 'NFT threshold',
+    ADD COLUMN IF NOT EXISTS name               String COMMENT 'Token name',
+    ADD COLUMN IF NOT EXISTS symbol            String COMMENT 'Token symbol',
+
+    -- indexes --
+    ADD INDEX IF NOT EXISTS idx_token_address (token_address) TYPE bloom_filter GRANULARITY 1,
+    ADD INDEX IF NOT EXISTS idx_creator (creator) TYPE bloom_filter GRANULARITY 1,
+    ADD INDEX IF NOT EXISTS idx_nft_max_supply (nft_max_supply) TYPE minmax GRANULARITY 1,
+    ADD INDEX IF NOT EXISTS idx_nft_threshold (nft_threshold) TYPE minmax GRANULARITY 1,
+    ADD INDEX IF NOT EXISTS idx_name (name) TYPE bloom_filter GRANULARITY 1,
+    ADD INDEX IF NOT EXISTS idx_symbol (symbol) TYPE bloom_filter GRANULARITY 1;
+
 -- SunPump TokenLaunched --
 CREATE TABLE IF NOT EXISTS sunpump_token_launched AS TEMPLATE_LOG
 COMMENT 'SunPump TokenLaunched events';
