@@ -74,6 +74,22 @@ pub fn foundational_store(
                     value: Some(pack_any(&payload, URL_TOKEN_CREATE)),
                 });
             }
+
+            // ---- TokenCreate Legacy ----
+            if let Some(pb::sunpump::v1::log::Log::TokenCreateLegacy(token_create)) = &log.log {
+                let key = token_create.token_address.to_vec();
+                substreams::log::info!("Processing TokenCreate for token: {}", Hex::encode(&key));
+                let payload = TokenCreate {
+                    token_address: key.clone(),
+                    factory: log.address.clone(),
+                    token_index: 0.to_string(),
+                    creator: token_create.creator.clone(),
+                };
+                entries.push(Entry {
+                    key,
+                    value: Some(pack_any(&payload, URL_TOKEN_CREATE)),
+                });
+            }
         }
     }
 
