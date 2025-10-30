@@ -12,6 +12,6 @@ ALTER TABLE native_transfer
     ADD INDEX IF NOT EXISTS idx_to (`to`) TYPE bloom_filter(0.005) GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_amount (amount) TYPE minmax GRANULARITY 1,
 
-    -- projections --
-    ADD PROJECTION IF NOT EXISTS prj_from (SELECT `from`, timestamp, _part_offset ORDER BY (`from`, timestamp)),
-    ADD PROJECTION IF NOT EXISTS prj_to (SELECT `to`, timestamp, _part_offset ORDER BY (`to`, timestamp));
+    -- projections (filters by minute) --
+    ADD PROJECTION IF NOT EXISTS prj_from_by_minute (SELECT `from`, toRelativeMinuteNum(timestamp) AS minute GROUP BY `from`, minute),
+    ADD PROJECTION IF NOT EXISTS prj_to_by_minute (SELECT `to`, toRelativeMinuteNum(timestamp) AS minute GROUP BY `to`, minute);

@@ -1,5 +1,5 @@
 ENDPOINT ?= tronevm.substreams.pinax.network:443
-START_BLOCK ?= 8418292
+START_BLOCK ?= 77000000
 PARALLEL_JOBS ?= 500
 
 .PHONY: build
