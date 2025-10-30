@@ -9,8 +9,22 @@ CREATE TABLE IF NOT EXISTS balance_deltas (
     -- signed change
     amount_delta   Int256,
 
-    INDEX idx_contract (contract) TYPE bloom_filter(0.005) GRANULARITY 1,
-    INDEX idx_account  (account)  TYPE bloom_filter(0.005) GRANULARITY 1
+    -- indexes --
+    INDEX idx_contract (contract) TYPE bloom_filter GRANULARITY 1
+)
+ENGINE = SummingMergeTree(amount_delta)
+ORDER BY (account, contract);
+
+CREATE TABLE IF NOT EXISTS balance_deltas_by_contract (
+    -- balance
+    contract       LowCardinality(String),
+    account        String,
+
+    -- signed change
+    amount_delta   Int256,
+
+    -- indexes --
+    INDEX idx_account  (account)  TYPE bloom_filter GRANULARITY 1
 )
 ENGINE = SummingMergeTree(amount_delta)
 ORDER BY (contract, account);
@@ -35,6 +49,24 @@ SELECT
     -CAST(amount AS Int256)                      AS amount_delta
 FROM trc20_transfer;
 
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_to_deltas_by_contract
+TO balance_deltas_by_contract
+AS
+SELECT
+    log_address                                  AS contract,
+    `to`                                         AS account,
+    CAST(amount AS Int256)                       AS amount_delta
+FROM trc20_transfer;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_from_deltas_by_contract
+TO balance_deltas_by_contract
+AS
+SELECT
+    log_address                                  AS contract,
+    `from`                                       AS account,
+    -CAST(amount AS Int256)                      AS amount_delta
+FROM trc20_transfer;
+
 CREATE OR REPLACE VIEW balances AS
 SELECT
     contract,
@@ -42,3 +74,11 @@ SELECT
     sum(amount_delta) AS balance
 FROM balance_deltas
 GROUP BY contract, account;
+
+CREATE OR REPLACE VIEW balances_by_contract AS
+SELECT
+    contract,
+    account,
+    sum(amount_delta) AS balance
+FROM balance_deltas_by_contract
+GROUP BY account, contract;
