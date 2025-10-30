@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     log_topic0                  String,
 
     -- indexes --
-    INDEX idx_timestamp         (timestamp)         TYPE minmax                 GRANULARITY 1,
     INDEX idx_block_num         (block_num)         TYPE minmax                 GRANULARITY 1,
     INDEX idx_block_hash        (block_hash)        TYPE bloom_filter           GRANULARITY 1,
     INDEX idx_tx_hash           (tx_hash)           TYPE bloom_filter           GRANULARITY 1,

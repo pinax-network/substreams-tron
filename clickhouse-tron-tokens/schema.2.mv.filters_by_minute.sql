@@ -18,11 +18,11 @@ FROM trc20_transfer
 GROUP BY log_address, minute;
 
 CREATE TABLE IF NOT EXISTS trc20_transfer_by_from (
-    `from`                 String,
-    minute                      UInt32,
+    `from`                  String,
+    minute                  UInt32,
 
     -- indexes --
-    INDEX idx_minute            (minute) TYPE minmax GRANULARITY 8
+    INDEX idx_minute        (minute) TYPE minmax GRANULARITY 8
 )
 ENGINE = ReplacingMergeTree
 ORDER BY (`from`, minute)
@@ -37,7 +37,7 @@ FROM trc20_transfer
 GROUP BY `from`, minute;
 
 CREATE TABLE IF NOT EXISTS trc20_transfer_by_to (
-    `to`                 String,
+    `to`                        String,
     minute                      UInt32,
 
     -- indexes --
