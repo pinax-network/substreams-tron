@@ -1,0 +1,44 @@
+-- Store signed balance changes
+-- Does not allow to query historical balances at a specific block
+-- but allows to compute current balances efficiently
+CREATE TABLE IF NOT EXISTS balance_deltas (
+    -- balance
+    contract       LowCardinality(String),
+    account        String,
+
+    -- signed change
+    amount_delta   UInt256,
+
+    -- indexes --
+    INDEX idx_account (account) TYPE bloom_filter GRANULARITY 1
+)
+ENGINE = SummingMergeTree(amount_delta)
+ORDER BY (contract, account);
+
+-- +credits: to-account receives amount
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_to_deltas
+TO balance_deltas
+AS
+SELECT
+    log_address                                  AS contract,
+    `to`                                         AS account,
+    CAST(amount AS Int256)                       AS amount_delta
+FROM trc20_transfer;
+
+-- -debits: from-account sends amount (negative delta)
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_from_deltas
+TO balance_deltas
+AS
+SELECT
+    log_address                                  AS contract,
+    `from`                                       AS account,
+    -CAST(amount AS Int256)                      AS amount_delta
+FROM trc20_transfer;
+
+CREATE OR REPLACE VIEW balances AS
+SELECT
+    contract,
+    account,
+    sum(amount_delta) AS balance
+FROM balance_deltas
+GROUP BY contract, account;
