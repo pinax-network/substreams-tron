@@ -75,7 +75,10 @@ supply AS (
 SELECT
     account,
     balance / POW(10, 6) AS balance,
-    Floor(b.balance / (SELECT * FROM supply) * 100, 4) AS percentage
+    Floor(b.balance / (SELECT * FROM supply) * 100, 4) AS percentage,
+    total_transactions,
+    min_timestamp as first_update,
+    max_timestamp as last_update
 FROM balances_by_log_address b
 WHERE log_address = token
 ORDER BY balance DESC
@@ -86,15 +89,16 @@ WITH
 'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD' AS token,
 supply AS (
     SELECT sum(balance)
-    FROM balances_by_log_address_sum
+    FROM balances_sum_by_log_address
     WHERE log_address = token AND balance > 0
     GROUP BY log_address
 )
 SELECT
     account,
     balance / POW(10, 6) AS balance,
-    Floor(b.balance / (SELECT * FROM supply) * 100, 4) AS percentage
-FROM balances_by_log_address_sum b
+    Floor(b.balance / (SELECT * FROM supply) * 100, 4) AS percentage,
+    total_transactions
+FROM balances_sum_by_log_address b
 WHERE log_address = token
 ORDER BY balance DESC
 LIMIT 20;
