@@ -63,7 +63,7 @@ WHERE
 GROUP BY log_address;
 
 
--- Using Summing MergeTree balances view --
+-- Using AggregatingMergeTree balances view --
 WITH
 'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD' AS token,
 supply AS (
@@ -81,12 +81,12 @@ WHERE log_address = token
 ORDER BY balance DESC
 LIMIT 20;
 
--- Using AggregatingMergeTree transfer agg table directly --
+-- Using Summing MergeTree balances view --
 WITH
 'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD' AS token,
 supply AS (
     SELECT sum(balance)
-    FROM balances_by_log_address_agg
+    FROM balances_by_log_address_sum
     WHERE log_address = token AND balance > 0
     GROUP BY log_address
 )
@@ -94,7 +94,7 @@ SELECT
     account,
     balance / POW(10, 6) AS balance,
     Floor(b.balance / (SELECT * FROM supply) * 100, 4) AS percentage
-FROM balances_by_log_address_agg b
+FROM balances_by_log_address_sum b
 WHERE log_address = token
 ORDER BY balance DESC
 LIMIT 20;
