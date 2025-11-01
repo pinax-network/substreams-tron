@@ -12,7 +12,8 @@ imports:
   sql: https://github.com/streamingfast/substreams-sink-sql/releases/download/protodefs-v1.0.7/substreams-sink-sql-protodefs-v1.0.7.spkg
 
   # Transfers Substreams
-  transfers: ../transfers/substreams.yaml
+  transfers_v0_1_0: https://github.com/pinax-network/substreams-tron/releases/download/tron-tokens-v0.1.0/tron-transfers-v0.1.0.spkg
+  clickhouse_tokens_v0_1_0: https://github.com/pinax-network/substreams-tron/releases/download/tron-tokens-v0.1.0/clickhouse-tron-tokens-v0.1.0.spkg
 
 binaries:
   default:
@@ -21,12 +22,15 @@ binaries:
 
 modules:
   - name: db_out
-    kind: map
-    inputs:
-      - source: sf.substreams.v1.Clock
-      - map: transfers:map_events
-    output:
-      type: proto:sf.substreams.sink.database.v1.DatabaseChanges
+    use: clickhouse_tokens_v0_1_0:db_out
+
+  # - name: db_out
+  #   kind: map
+  #   inputs:
+  #     - source: sf.substreams.v1.Clock
+  #     - map: transfers:map_events
+  #   output:
+  #     type: proto:sf.substreams.sink.database.v1.DatabaseChanges
 
 sink:
   module: db_out

@@ -31,11 +31,16 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
     INDEX idx_max_timestamp (max_timestamp) TYPE minmax GRANULARITY 1,
     INDEX idx_min_block_num (min_block_num) TYPE minmax GRANULARITY 1,
     INDEX idx_max_block_num (max_block_num) TYPE minmax GRANULARITY 1,
-    INDEX idx_transactions (transactions) TYPE minmax GRANULARITY 1,
-
+    INDEX idx_transactions (transactions) TYPE minmax GRANULARITY 1
 )
 ENGINE = AggregatingMergeTree
 ORDER BY (account, log_address, date);
+
+-- Settings and projections --
+ALTER TABLE trc20_transfer_agg
+    MODIFY SETTING deduplicate_merge_projection_mode = 'rebuild';
+ALTER TABLE trc20_transfer_agg
+    ADD PROJECTION IF NOT EXISTS prj_log_address_account (SELECT * ORDER BY (log_address, account));
 
 -- For `/holders` queries
 CREATE TABLE IF NOT EXISTS trc20_transfer_agg_by_log_address AS trc20_transfer_agg
