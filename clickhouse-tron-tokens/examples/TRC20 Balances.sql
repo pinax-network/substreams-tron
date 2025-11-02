@@ -1,76 +1,41 @@
--- All balances for specific account --
+-- TRC20 `/balances` --
 EXPLAIN indexes = 1, projections = 1
-WITH
-    ['TCfeM1VFrBmCkL92pcrtWW61uJQYb91uwM'] AS accounts
-, transfer_out AS (
-    SELECT log_address, `from` as account, -sum(amount) AS amount
-    FROM trc20_transfer
-    WHERE `from` IN accounts
-    GROUP BY log_address, `from`
-), transfer_in AS (
-    SELECT log_address, `to` as account, sum(amount) AS amount
-    FROM trc20_transfer
-    WHERE `to` IN accounts
-    GROUP BY log_address, `to`
-)
 SELECT
-    log_address,
+    log_address as contract,
     account,
-    sum(amount) AS balance
-FROM transfer_out, transfer_in
-GROUP BY log_address, account;
+    balance,
+    total_transactions,
+    min_timestamp as first_update,
+    max_timestamp as last_update
+FROM trc20_balances
+WHERE account = 'TF14bUwNRFbx8fJPzXuG1bUBYzsynFvjtJ'
+ORDER BY last_update DESC
+LIMIT 20;
 
--- All balances by holders of specific contract --
--- All balances for specific account --
+-- TRC20 `/historical/balances` --
 EXPLAIN indexes = 1, projections = 1
-WITH
-    'TU1zTUZAiJQSLGpjdisabQLVqg9bw129bx' AS token
-, transfer_out AS (
-    SELECT log_address, `from` as account, -sum(amount) AS amount
-    FROM trc20_transfer
-    WHERE log_address = token
-    GROUP BY log_address, `from`, `to`
-), transfer_in AS (
-    SELECT log_address, `to` as account, sum(amount) AS amount
-    FROM trc20_transfer
-    WHERE log_address = token
-    GROUP BY log_address, `from`, `to`
-)
 SELECT
-    log_address,
+    log_address as contract,
     account,
-    -sum(amount) AS balance
-FROM transfer_out, transfer_in
-GROUP BY log_address, account
-ORDER BY balance DESC
-LIMIT 10;
+    amount_in,
+    amount_out,
+    date,
+    minute,
+    total_transactions,
+    min_timestamp as first_update,
+    max_timestamp as last_update
+FROM trc20_transfer_by_time
+WHERE log_address = 'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD'
+ORDER BY minute DESC;
 
--- Top 100 balances by holders of specific contract --
-SELECT account, transfer_in - transfer_out as balance
-FROM trc20_transfer_agg FINAL
-WHERE interval_min = 1440
-AND log_address='TU1zTUZAiJQSLGpjdisabQLVqg9bw129bx'
-ORDER BY  balance
-DESC LIMIT 100
-
-
-
-SELECT log_address, sum(amount) AS balance
-FROM trc20_transfer
-WHERE
-    log_address = 'TU1zTUZAiJQSLGpjdisabQLVqg9bw129bx' AND
-    `from` = 'TD1QExVvf2suXDKcmnF6W9XLciCroAm1Q7'
-GROUP BY log_address;
-
-
--- Using AggregatingMergeTree balances view --
+-- TRC20 `/holders` --
+EXPLAIN indexes = 1, projections = 1
 WITH
 'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD' AS token,
 supply AS (
-    SELECT sum(balance)
-    FROM balances_by_log_address
-    WHERE log_address = token AND balance > 0
-    GROUP BY log_address
+    SELECT total_active_supply
+    FROM trc20_token_metadata
+    WHERE log_address = token
 )
 SELECT
     account,
@@ -79,29 +44,24 @@ SELECT
     total_transactions,
     min_timestamp as first_update,
     max_timestamp as last_update
-FROM balances_by_log_address b
+FROM trc20_balances b
 WHERE log_address = token
 ORDER BY balance DESC
 LIMIT 20;
 
--- Using Summing MergeTree balances view --
-WITH
-'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD' AS token,
-supply AS (
-    SELECT sum(balance)
-    FROM balances_sum_by_log_address
-    WHERE log_address = token AND balance > 0
-    GROUP BY log_address
-)
-SELECT
-    account,
-    balance / POW(10, 6) AS balance,
-    Floor(b.balance / (SELECT * FROM supply) * 100, 4) AS percentage,
-    total_transactions
-FROM balances_sum_by_log_address b
-WHERE log_address = token
-ORDER BY balance DESC
+-- Token Metadata
+EXPLAIN indexes = 1, projections = 1
+SELECT *
+FROM trc20_token_metadata
+WHERE log_address = 'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD';
+
+-- Top 20 tokens by number of holders --
+EXPLAIN indexes = 1, projections = 1
+SELECT *
+FROM trc20_token_metadata
+ORDER BY holders DESC
 LIMIT 20;
+
 
     ┌─log_address────────────────────────┬───────min_timestamp─┬───────max_timestamp─┬─min_block_num─┬─max_block_num─┬─block_num_diff─┬──count─┐
  1. │ TQLNpTDwUQfnvTojatqRSqPpmW9WwWvkem │ 2018-11-20 08:14:48 │ 2018-12-07 08:52:30 │       4247606 │       4734054 │         486448 │ 553469 │
