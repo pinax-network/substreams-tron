@@ -1,15 +1,16 @@
--- historical transfers aggregated by time (date, minute)
+-- historical transfers aggregated by time (date)
 CREATE OR REPLACE VIEW trc20_transfer_by_time AS
 SELECT
     -- order keys --
     log_address,
     account,
     date,
-    minute,
+    -- minute,
 
     -- balances --
     sum(t.amount_in) AS amount_in,
     sum(t.amount_out) AS amount_out,
+    sum(t.amount_delta) AS amount_delta,
 
     -- stats --
     sum(t.transactions) AS total_transactions,
@@ -18,4 +19,5 @@ SELECT
     min(t.min_block_num) AS min_block_num,
     max(t.max_block_num) AS max_block_num
 FROM trc20_transfer_agg t
-GROUP BY log_address, account, date, minute;
+GROUP BY log_address, account, date
+COMMENT 'Aggregated TRC20 transfers by date';

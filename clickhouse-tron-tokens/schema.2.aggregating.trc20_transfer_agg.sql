@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
     log_address         LowCardinality(String) COMMENT 'token contract address',
     account             LowCardinality(String) COMMENT 'account address',
     date                Date COMMENT 'date of the transfers',
-    minute              UInt32 COMMENT 'minute of the transfers',
+    -- minute              UInt32 COMMENT 'minute of the transfers',
 
     -- transfers in/out --
     amount_in           SimpleAggregateFunction(sum, UInt256) COMMENT 'Total amount received by account',
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
 
     -- indexes - order keys--
     INDEX idx_log_address (log_address) TYPE bloom_filter GRANULARITY 1,
-    INDEX idx_minute (minute) TYPE minmax GRANULARITY 1,
+    -- INDEX idx_minute (minute) TYPE minmax GRANULARITY 1,
 
     -- indexes -- transfer in/out & stats --
     INDEX idx_amount_in (amount_in) TYPE minmax GRANULARITY 1,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
     INDEX idx_transactions (transactions) TYPE minmax GRANULARITY 1
 )
 ENGINE = AggregatingMergeTree
-ORDER BY (account, log_address, date, minute);
+ORDER BY (account, log_address, date);
 
 -- Settings and projections --
 ALTER TABLE trc20_transfer_agg
@@ -92,7 +92,7 @@ SELECT
     log_address,
     `to` AS account,
     date(timestamp) AS date,
-    toRelativeMinuteNum(timestamp) AS minute,
+    -- toRelativeMinuteNum(timestamp) AS minute,
 
     -- transfers in/out --
     sum(amount) AS amount_in,
@@ -106,7 +106,7 @@ SELECT
     max(block_num) AS max_block_num,
     count() AS transactions
 FROM trc20_transfer
-GROUP BY log_address, account, date, minute;
+GROUP BY log_address, account, date;
 
 -- -debits: from-account sends amount (negative delta)
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg_out
@@ -116,7 +116,7 @@ SELECT
     log_address,
     `from` AS account,
     date(timestamp) AS date,
-    toRelativeMinuteNum(timestamp) AS minute,
+    -- toRelativeMinuteNum(timestamp) AS minute,
 
     -- transfers in/out --
     0 AS amount_in,
@@ -130,4 +130,4 @@ SELECT
     max(block_num) AS max_block_num,
     count() AS transactions
 FROM trc20_transfer
-GROUP BY log_address, account, date, minute;
+GROUP BY log_address, account, date;
