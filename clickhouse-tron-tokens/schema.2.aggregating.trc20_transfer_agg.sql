@@ -56,11 +56,11 @@ ALTER TABLE trc20_transfer_agg
             sum(amount_delta),
 
             -- stats --
-            sum(transactions),
             min(min_timestamp),
             max(max_timestamp),
             min(min_block_num),
-            max(max_block_num)
+            max(max_block_num),
+            sum(transactions)
         GROUP BY log_address, account
     ),
     -- used for `/balances`
@@ -76,58 +76,68 @@ ALTER TABLE trc20_transfer_agg
             sum(amount_delta),
 
             -- stats --
-            sum(transactions),
             min(min_timestamp),
             max(max_timestamp),
             min(min_block_num),
-            max(max_block_num)
+            max(max_block_num),
+            sum(transactions)
         GROUP BY account, log_address
     );
 
 -- +credits: to-account receives amount
 CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg_in
 TO trc20_transfer_agg AS
-SELECT
+WITH transfers AS (
+    SELECT
+        -- order keys --
+        log_address,
+        `to` AS account,
+
+        -- timeseries --
+        timestamp,
+        block_num,
+
+        -- transfers in/out --
+        amount AS amount_in,
+        0 AS amount_out,
+        toInt256(amount) AS amount_delta,
+        1 AS transactions
+    FROM trc20_transfer
+
+    UNION ALL
+
+    -- -debits: from-account sends amount (negative delta)
+    SELECT
+        -- order keys --
+        log_address,
+        `from` AS account,
+
+        -- timeseries --
+        timestamp,
+        block_num,
+
+        -- transfers in/out --
+        0 AS amount_in,
+        amount AS amount_out,
+        -toInt256(amount) AS amount_delta,
+        1 AS transactions
+    FROM trc20_transfer
+) SELECT
     -- order keys --
     log_address,
-    `to` AS account,
+    account,
     date(timestamp) AS date,
-    -- toRelativeMinuteNum(timestamp) AS minute,
 
     -- transfers in/out --
-    sum(amount) AS amount_in,
-    0 AS amount_out,
-    sum(toInt256(amount)) AS amount_delta,
+    sum(amount_in) AS amount_in,
+    sum(amount_out) AS amount_out,
+    sum(amount_delta) AS amount_delta,
 
     -- stats --
     min(timestamp) AS min_timestamp,
     max(timestamp) AS max_timestamp,
     min(block_num) AS min_block_num,
     max(block_num) AS max_block_num,
-    count() AS transactions
-FROM trc20_transfer
-GROUP BY log_address, account, date;
-
--- -debits: from-account sends amount (negative delta)
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg_out
-TO trc20_transfer_agg AS
-SELECT
-    -- order keys --
-    log_address,
-    `from` AS account,
-    date(timestamp) AS date,
-    -- toRelativeMinuteNum(timestamp) AS minute,
-
-    -- transfers in/out --
-    0 AS amount_in,
-    sum(amount) AS amount_out,
-    -sum(toInt256(amount)) AS amount_delta,
-
-    -- stats --
-    min(timestamp) AS min_timestamp,
-    max(timestamp) AS max_timestamp,
-    min(block_num) AS min_block_num,
-    max(block_num) AS max_block_num,
-    count() AS transactions
-FROM trc20_transfer
+    sum(transactions) AS transactions
+FROM transfers
 GROUP BY log_address, account, date;

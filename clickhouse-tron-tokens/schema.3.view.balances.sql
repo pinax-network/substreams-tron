@@ -7,6 +7,8 @@ SELECT
     account,
 
     -- balances --
+    sum(amount_in) AS amount_in,
+    sum(amount_out) AS amount_out,
     sum(amount_delta) AS balance,
 
     -- stats --
