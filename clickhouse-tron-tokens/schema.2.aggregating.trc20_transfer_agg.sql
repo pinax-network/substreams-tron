@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
     -- transfers in/out --
     amount_in           SimpleAggregateFunction(sum, UInt256) COMMENT 'Total amount received by account',
     amount_out          SimpleAggregateFunction(sum, UInt256) COMMENT 'Total amount sent by account',
-    amount              SimpleAggregateFunction(sum, Int256) COMMENT 'Net delta amount for account (+in, -out)',
+    amount_delta        SimpleAggregateFunction(sum, Int256) COMMENT 'Net delta amount for account (+in, -out)',
 
     -- stats --
     min_timestamp       SimpleAggregateFunction(min, DateTime('UTC')) COMMENT 'Timestamp of first transfer for account',
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
     -- indexes -- transfer in/out & stats --
     INDEX idx_amount_in (amount_in) TYPE minmax GRANULARITY 1,
     INDEX idx_amount_out (amount_out) TYPE minmax GRANULARITY 1,
-    INDEX idx_amount (amount) TYPE minmax GRANULARITY 1,
+    INDEX idx_amount_delta (amount_delta) TYPE minmax GRANULARITY 1,
 
     -- stats indexes --
     INDEX idx_min_timestamp (min_timestamp) TYPE minmax GRANULARITY 1,
@@ -37,8 +37,6 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
 )
 ENGINE = AggregatingMergeTree
 ORDER BY (account, log_address, date, minute);
-
--- Settings and projections --
 
 -- Settings and projections --
 ALTER TABLE trc20_transfer_agg
@@ -55,7 +53,7 @@ ALTER TABLE trc20_transfer_agg
             -- balances --
             sum(amount_in),
             sum(amount_out),
-            sum(amount),
+            sum(amount_delta),
 
             -- stats --
             sum(transactions),
@@ -75,7 +73,7 @@ ALTER TABLE trc20_transfer_agg
             -- balances --
             sum(amount_in),
             sum(amount_out),
-            sum(amount),
+            sum(amount_delta),
 
             -- stats --
             sum(transactions),
@@ -86,49 +84,50 @@ ALTER TABLE trc20_transfer_agg
         GROUP BY account, log_address
     );
 
-
--- Materialized view for TRC20 transfer aggregated stats
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg
-TO trc20_transfer_agg AS
 -- +credits: to-account receives amount
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg_in
+TO trc20_transfer_agg AS
 SELECT
     -- order keys --
     log_address,
     `to` AS account,
-    date(t.timestamp) AS date,
-    toRelativeMinuteNum(t.timestamp) AS minute,
+    date(timestamp) AS date,
+    toRelativeMinuteNum(timestamp) AS minute,
 
     -- transfers in/out --
-    sum(t.amount) AS amount_in,
-    sum(toInt256(t.amount)) AS amount,
+    sum(amount) AS amount_in,
+    0 AS amount_out,
+    sum(toInt256(amount)) AS amount_delta,
 
     -- stats --
-    min(t.timestamp) AS min_timestamp,
-    max(t.timestamp) AS max_timestamp,
-    min(t.block_num) AS min_block_num,
-    max(t.block_num) AS max_block_num,
+    min(timestamp) AS min_timestamp,
+    max(timestamp) AS max_timestamp,
+    min(block_num) AS min_block_num,
+    max(block_num) AS max_block_num,
     count() AS transactions
-FROM trc20_transfer t
-GROUP BY account, log_address, date, minute
+FROM trc20_transfer
+GROUP BY log_address, account, date, minute;
 
-UNION ALL
-
+-- -debits: from-account sends amount (negative delta)
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg_out
+TO trc20_transfer_agg AS
 SELECT
     -- order keys --
     log_address,
     `from` AS account,
-    date(t.timestamp) AS date,
-    toRelativeMinuteNum(t.timestamp) AS minute,
+    date(timestamp) AS date,
+    toRelativeMinuteNum(timestamp) AS minute,
 
     -- transfers in/out --
-    sum(t.amount) AS amount_out,
-    -sum(toInt256(t.amount)) AS amount,
+    0 AS amount_in,
+    sum(amount) AS amount_out,
+    -sum(toInt256(amount)) AS amount_delta,
 
     -- stats --
-    min(t.timestamp) AS min_timestamp,
-    max(t.timestamp) AS max_timestamp,
-    min(t.block_num) AS min_block_num,
-    max(t.block_num) AS max_block_num,
+    min(timestamp) AS min_timestamp,
+    max(timestamp) AS max_timestamp,
+    min(block_num) AS min_block_num,
+    max(block_num) AS max_block_num,
     count() AS transactions
-FROM trc20_transfer t
-GROUP BY account, log_address, date, minute;
+FROM trc20_transfer
+GROUP BY log_address, account, date, minute;

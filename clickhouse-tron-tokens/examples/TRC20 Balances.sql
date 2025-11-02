@@ -12,22 +12,6 @@ WHERE account = 'TF14bUwNRFbx8fJPzXuG1bUBYzsynFvjtJ'
 ORDER BY last_update DESC
 LIMIT 20;
 
--- TRC20 `/historical/balances` --
-EXPLAIN indexes = 1, projections = 1
-SELECT
-    log_address as contract,
-    account,
-    amount_in,
-    amount_out,
-    date,
-    minute,
-    total_transactions,
-    min_timestamp as first_update,
-    max_timestamp as last_update
-FROM trc20_transfer_by_time
-WHERE log_address = 'TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD'
-ORDER BY minute DESC;
-
 -- TRC20 `/holders` --
 EXPLAIN indexes = 1, projections = 1
 WITH
@@ -45,7 +29,7 @@ SELECT
     min_timestamp as first_update,
     max_timestamp as last_update
 FROM trc20_balances b
-WHERE log_address = token
+WHERE log_address = token AND balance > 0
 ORDER BY balance DESC
 LIMIT 20;
 

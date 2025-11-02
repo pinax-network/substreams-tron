@@ -7,15 +7,15 @@ SELECT
     account,
 
     -- balances --
-    sum(t.amount) AS balance,
+    sum(amount_delta) AS balance,
 
     -- stats --
-    sum(t.transactions) AS total_transactions,
-    min(t.min_timestamp) AS min_timestamp,
-    max(t.max_timestamp) AS max_timestamp,
-    min(t.min_block_num) AS min_block_num,
-    max(t.max_block_num) AS max_block_num
-FROM trc20_transfer_agg t
+    sum(transactions) AS total_transactions,
+    min(min_timestamp) AS min_timestamp,
+    max(max_timestamp) AS max_timestamp,
+    min(min_block_num) AS min_block_num,
+    max(max_block_num) AS max_block_num
+FROM trc20_transfer_agg
 GROUP BY log_address, account;
 
 -- TRC20 Token Metadata View
