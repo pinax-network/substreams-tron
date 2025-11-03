@@ -13,6 +13,8 @@ SELECT
 
     -- stats --
     sum(transactions) AS total_transactions,
+    sum(transactions_in) AS total_transactions_in,
+    sum(transactions_out) AS total_transactions_out,
     min(min_timestamp) AS min_timestamp,
     max(max_timestamp) AS max_timestamp,
     min(min_block_num) AS min_block_num,
@@ -34,6 +36,8 @@ SELECT
     sum(balance) AS total_active_supply,
 
     -- stats --
+    sum(total_transactions_in) AS total_transactions_in,
+    sum(total_transactions_out) AS total_transactions_out,
     sum(total_transactions) AS total_transactions,
     min(min_timestamp) AS min_timestamp,
     max(max_timestamp) AS max_timestamp,

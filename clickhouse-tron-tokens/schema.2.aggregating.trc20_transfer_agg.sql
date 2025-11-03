@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
     max_timestamp       SimpleAggregateFunction(max, DateTime('UTC')) COMMENT 'Timestamp of last transfer for account',
     min_block_num       SimpleAggregateFunction(min, UInt32) COMMENT 'Block number of first transfer for account',
     max_block_num       SimpleAggregateFunction(max, UInt32) COMMENT 'Block number of last transfer for account',
+    transactions_in     SimpleAggregateFunction(sum, UInt64) COMMENT 'Total number of incoming transfers for account',
+    transactions_out    SimpleAggregateFunction(sum, UInt64) COMMENT 'Total number of outgoing transfers for account',
     transactions        SimpleAggregateFunction(sum, UInt64) COMMENT 'Total number of transfers for account',
 
     -- indexes - order keys--
@@ -33,7 +35,9 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_agg (
     INDEX idx_max_timestamp (max_timestamp) TYPE minmax GRANULARITY 1,
     INDEX idx_min_block_num (min_block_num) TYPE minmax GRANULARITY 1,
     INDEX idx_max_block_num (max_block_num) TYPE minmax GRANULARITY 1,
-    INDEX idx_transactions (transactions) TYPE minmax GRANULARITY 1
+    INDEX idx_transactions (transactions) TYPE minmax GRANULARITY 1,
+    INDEX idx_transactions_in (transactions_in) TYPE minmax GRANULARITY 1,
+    INDEX idx_transactions_out (transactions_out) TYPE minmax GRANULARITY 1
 )
 ENGINE = AggregatingMergeTree
 ORDER BY (account, log_address, date);
@@ -60,7 +64,9 @@ ALTER TABLE trc20_transfer_agg
             max(max_timestamp),
             min(min_block_num),
             max(max_block_num),
-            sum(transactions)
+            sum(transactions),
+            sum(transactions_in),
+            sum(transactions_out)
         GROUP BY log_address, account
     ),
     -- used for `/balances`
@@ -80,7 +86,9 @@ ALTER TABLE trc20_transfer_agg
             max(max_timestamp),
             min(min_block_num),
             max(max_block_num),
-            sum(transactions)
+            sum(transactions),
+            sum(transactions_in),
+            sum(transactions_out)
         GROUP BY account, log_address
     );
 
@@ -101,6 +109,8 @@ WITH transfers AS (
         amount AS amount_in,
         0 AS amount_out,
         toInt256(amount) AS amount_delta,
+        1 AS transactions_in,
+        0 AS transactions_out,
         1 AS transactions
     FROM trc20_transfer
 
@@ -120,6 +130,8 @@ WITH transfers AS (
         0 AS amount_in,
         amount AS amount_out,
         -toInt256(amount) AS amount_delta,
+        0 AS transactions_in,
+        1 AS transactions_out,
         1 AS transactions
     FROM trc20_transfer
 ) SELECT
@@ -138,6 +150,8 @@ WITH transfers AS (
     max(timestamp) AS max_timestamp,
     min(block_num) AS min_block_num,
     max(block_num) AS max_block_num,
-    sum(transactions) AS transactions
+    sum(transactions) AS transactions,
+    sum(transactions_in) AS transactions_in,
+    sum(transactions_out) AS transactions_out
 FROM transfers
 GROUP BY log_address, account, date;

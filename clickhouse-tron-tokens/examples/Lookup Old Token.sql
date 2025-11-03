@@ -9,36 +9,24 @@ WITH transfers AS (
         count() as count
     FROM trc20_transfer
     GROUP BY log_address
-    ORDER BY min(block_num) ASC
 ) SELECT * FROM transfers
-WHERE count >= 100
+WHERE count >= 500
 ORDER BY block_num_diff ASC
 LIMIT 50;
 
-    ┌─log_address────────────────────────┬───────min_timestamp─┬───────max_timestamp─┬─min_block_num─┬─max_block_num─┬─block_num_diff─┬──count─┐
- 1. │ TRRGC2RvhFQP5RcDfPg91s6xok3PuP4gWD │ 2019-01-03 10:30:33 │ 2019-01-04 09:06:09 │       5485690 │       5512770 │          27080 │    621 │
- 2. │ TUXB6xwmjDttGrJmkNTEotEVK8jStu8499 │ 2019-01-04 12:09:24 │ 2019-01-07 09:06:33 │       5516431 │       5599012 │          82581 │   2768 │
- 3. │ TBopmnF7nMfShsHEZN6HDwuC4DfEbyuira │ 2019-01-02 06:18:03 │ 2019-01-07 13:43:27 │       5451883 │       5604545 │         152662 │  17481 │
- 4. │ TLvDJcvKJDi3QuHgFbJC6SeTj3UacmtQU3 │ 2018-12-30 14:14:12 │ 2019-01-07 14:14:15 │       5375271 │       5605160 │         229889 │   2520 │
- 5. │ TQuCYa3yi11s24VyR2Ye7XcWDG1MUJEbJq │ 2018-12-28 19:25:33 │ 2019-01-07 14:42:48 │       5323967 │       5605730 │         281763 │   6266 │
- 6. │ TYPHiHUiPBPCNvqBpzy1f7bdqrZ5r8e1K7 │ 2018-12-27 16:50:15 │ 2019-01-07 12:33:06 │       5292139 │       5603140 │         311001 │   1530 │
- 7. │ TYe6uNj7jxkwy28yXeLPs6KDLZCuUjXvgd │ 2018-12-27 18:11:51 │ 2019-01-07 14:33:27 │       5293763 │       5605543 │         311780 │   5888 │
- 8. │ TBXVmYApySCRgqPfAYu9ors4dA7URQ2aET │ 2018-12-27 17:33:18 │ 2019-01-07 14:44:06 │       5292998 │       5605756 │         312758 │ 970371 │
- 9. │ TLCiRv2qn9tP3x59B3jtxuonyQzUHwNyUq │ 2018-12-27 16:21:12 │ 2019-01-07 13:37:00 │       5291559 │       5604416 │         312857 │    904 │
-10. │ TSkG9SSKdWV5QBuTPN6udi48rym5iPpLof │ 2018-12-27 16:58:42 │ 2019-01-07 14:30:00 │       5292307 │       5605474 │         313167 │   1734 │
-11. │ TUh2Gkq1ZkQyZyfc2KZ9JQsMavWaY3Cdma │ 2018-12-27 16:30:09 │ 2019-01-07 14:06:42 │       5291738 │       5605009 │         313271 │   1342 │
-12. │ TL175uyihLqQD656aFx3uhHYe1tyGkmXaW │ 2018-12-27 16:30:09 │ 2019-01-07 14:32:06 │       5291738 │       5605516 │         313778 │  30963 │
-13. │ TNq5PbSssK5XfmSYU4Aox4XkgTdpDoEDiY │ 2018-12-27 16:23:30 │ 2019-01-07 14:30:30 │       5291605 │       5605484 │         313879 │   2645 │
-14. │ TVeQmdceGXgFDSgfqqfHSSfxz4ucSmGjJA │ 2018-12-27 16:25:33 │ 2019-01-07 14:34:45 │       5291646 │       5605569 │         313923 │    761 │
-15. │ TAuXsThKmMYZWJJwfkGipPNjGFvPyrjNnZ │ 2018-12-27 16:24:33 │ 2019-01-07 14:41:57 │       5291626 │       5605713 │         314087 │   3624 │
-16. │ TNbYoP22d74RWy4ETssHsXYFrnmmbQ2fvt │ 2018-12-27 16:26:06 │ 2019-01-07 14:43:33 │       5291657 │       5605745 │         314088 │    852 │
-17. │ TBAo7PNyKo94YWUq1Cs2LBFxkhTphnAE4T │ 2018-12-27 16:25:51 │ 2019-01-07 14:43:24 │       5291652 │       5605742 │         314090 │  15190 │
-18. │ TMWkPhsb1dnkAVNy8ej53KrFNGWy9BJrfu │ 2018-12-27 16:22:51 │ 2019-01-07 14:42:18 │       5291592 │       5605720 │         314128 │  15893 │
-19. │ TQY2hQDXuNVB1s1b16PP9K8gS3gi5RmwFj │ 2018-12-27 16:24:03 │ 2019-01-07 14:44:00 │       5291616 │       5605754 │         314138 │  23857 │
-20. │ TNisVGhbxrJiEHyYUMPxRzgytUtGM7vssZ │ 2018-12-27 16:21:00 │ 2019-01-07 14:42:06 │       5291555 │       5605716 │         314161 │  23882 │
-21. │ TYbSzw3PqBWohc4DdyzFDJMd1hWeNN6FkB │ 2018-12-27 16:22:09 │ 2019-01-07 14:43:33 │       5291578 │       5605745 │         314167 │  12383 │
-22. │ TWGZ7HnAhZkvxiT89vCBSd6Pzwin5vt3ZA │ 2018-12-27 16:21:09 │ 2019-01-07 14:43:06 │       5291558 │       5605736 │         314178 │ 195600 │
-23. │ TCN77KWWyUyi2A4Cu7vrh5dnmRyvUuME1E │ 2018-12-27 16:21:00 │ 2019-01-07 14:44:03 │       5291555 │       5605755 │         314200 │ 128013 │
-24. │ THvZvKPLHKLJhEFYKiyqj6j8G8nGgfg7ur │ 2018-12-27 16:21:00 │ 2019-01-07 14:44:06 │       5291555 │       5605756 │         314201 │ 819446 │
-    └────────────────────────────────────┴─────────────────────┴─────────────────────┴───────────────┴───────────────┴────────────────┴────────┘
 
+    ┌─log_address────────────────────────┬───────min_timestamp─┬───────max_timestamp─┬─min_block_num─┬─max_block_num─┬─block_num_diff─┬──count─┐
+
+10. │ TY5NJKhJFkipYDokTAgo8TtzTwpicXNoCQ │ 2023-05-09 14:37:57 │ 2023-05-09 15:03:42 │      51009736 │      51010251 │            515 │   6156 │
+11. │ TEw6v7UVQRwSi9FHZaKaYDxR8UTi2usuaJ │ 2023-05-09 14:33:18 │ 2023-05-09 15:00:06 │      51009643 │      51010179 │            536 │   6156 │
+12. │ TVifHwfCrNnzj1uiRgDoxMitnq4kedPbYU │ 2023-05-09 14:38:12 │ 2023-05-09 15:09:15 │      51009741 │      51010362 │            621 │   6156 │
+13. │ TJZevS6H6ZBUj5LTtTzgw8teoCz9pfKYsN │ 2023-05-09 14:38:24 │ 2023-05-09 15:13:39 │      51009745 │      51010450 │            705 │   6139 │
+14. │ TZJK5yXVwzz5JEY7wAFNRpiJaC4F4u4925 │ 2023-06-06 03:26:45 │ 2023-06-06 04:05:45 │      51800457 │      51801237 │            780 │  19398 │
+15. │ TQJDgbHd23V6SAeuADbHBFENBFcpJ17ePp │ 2023-05-12 07:02:12 │ 2023-05-12 07:43:12 │      51086890 │      51087680 │            790 │   8502 │
+16. │ TJSmP3gXUsSYuKVmxJHBtaQNdshABP6B4J │ 2023-12-01 11:51:48 │ 2023-12-01 12:35:24 │      56932899 │      56933769 │            870 │   3348 │
+17. │ TMuhws8tPneszmnzXBJb1NG7TK769WZp2h │ 2023-05-25 12:48:27 │ 2023-05-25 13:38:03 │      51467927 │      51468919 │            992 │    793 │
+18. │ TT2dLnmJXW78DXh3BBkwknVnmRPXmqKbYi │ 2023-05-12 07:02:24 │ 2023-05-12 07:56:21 │      51086894 │      51087933 │           1039 │   8502 │
+
+
+    ┌─log_address────────────────────────┬───────min_timestamp─┬───────max_timestamp─┬─min_block_num─┬─max_block_num─┬─block_num_diff─┬──count─┐
+43. │ TWz4fZU2p7eZvhV3zjLJMvJXm1AQwboRLA │ 2021-09-29 10:51:00 │ 2021-09-29 14:35:51 │      34132736 │      34137228 │           4492 │    840 │
