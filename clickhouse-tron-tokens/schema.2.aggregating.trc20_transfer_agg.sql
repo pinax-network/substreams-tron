@@ -60,6 +60,7 @@ ALTER TABLE trc20_transfer_agg
             sum(amount_delta),
 
             -- stats --
+            count(),
             min(min_timestamp),
             max(max_timestamp),
             min(min_block_num),
@@ -82,6 +83,7 @@ ALTER TABLE trc20_transfer_agg
             sum(amount_delta),
 
             -- stats --
+            count(),
             min(min_timestamp),
             max(max_timestamp),
             min(min_block_num),
@@ -90,6 +92,28 @@ ALTER TABLE trc20_transfer_agg
             sum(transactions_in),
             sum(transactions_out)
         GROUP BY account, log_address
+    ),
+    -- used for token metadata queries
+    ADD PROJECTION IF NOT EXISTS prj_log_address (
+        SELECT
+            -- order keys --
+            log_address,
+
+            -- balances --
+            sum(amount_in),
+            sum(amount_out),
+            sum(amount_delta),
+
+            -- stats --
+            count(),
+            min(min_timestamp),
+            max(max_timestamp),
+            min(min_block_num),
+            max(max_block_num),
+            sum(transactions),
+            sum(transactions_in),
+            sum(transactions_out)
+        GROUP BY log_address
     );
 
 -- +credits: to-account receives amount
