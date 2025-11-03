@@ -13,7 +13,9 @@ SELECT
     sum(t.amount_delta) AS amount_delta,
 
     -- stats --
-    sum(t.transactions) AS total_transactions,
+    sum(t.transactions) AS transactions,
+    sum(t.transactions_in) AS transactions_in,
+    sum(t.transactions_out) AS transactions_out,
     min(t.min_timestamp) AS min_timestamp,
     max(t.max_timestamp) AS max_timestamp,
     min(t.min_block_num) AS min_block_num,
