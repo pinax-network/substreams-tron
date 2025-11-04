@@ -117,7 +117,7 @@ ALTER TABLE trc20_transfer_agg
     );
 
 -- +credits: to-account receives amount
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg_in
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_agg
 TO trc20_transfer_agg AS
 WITH transfers AS (
     SELECT
