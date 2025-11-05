@@ -43,15 +43,13 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     -- INDEX idx_log_topic0        (log_topic0)            TYPE bloom_filter           GRANULARITY 1, -- only available in tron-tokens-v0.1.1
 
 )
-ENGINE = ReplacingMergeTree
+ENGINE = MergeTree
 ORDER BY (
     timestamp, block_num,
     block_hash, tx_index, log_index
 );
 
 -- Settings and projections --
-ALTER TABLE TEMPLATE_LOG
-    MODIFY SETTING deduplicate_merge_projection_mode = 'rebuild';
 ALTER TABLE TEMPLATE_LOG
     -- projections --
     ADD PROJECTION IF NOT EXISTS prj_tx_hash                               (SELECT tx_hash, toRelativeMinuteNum(timestamp) AS minute GROUP BY tx_hash, minute),
@@ -64,6 +62,7 @@ ALTER TABLE TEMPLATE_LOG
 
 -- Template for Transactions (without log fields) --
 CREATE TABLE IF NOT EXISTS TEMPLATE_TRANSACTION AS TEMPLATE_LOG
+ENGINE = MergeTree
 ORDER BY (
     timestamp, block_num,
     block_hash, tx_index
