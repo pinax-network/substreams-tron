@@ -114,6 +114,23 @@ ALTER TABLE trc20_transfer_agg
             sum(transactions_in),
             sum(transactions_out)
         GROUP BY log_address
+    ),
+    -- used to lookup all accounts with activity in a date range
+    ADD PROJECTION IF NOT EXISTS prj_account (
+        SELECT
+            -- order keys --
+            account,
+
+            -- stats --
+            count(),
+            min(min_timestamp),
+            max(max_timestamp),
+            min(min_block_num),
+            max(max_block_num),
+            sum(transactions),
+            sum(transactions_in),
+            sum(transactions_out)
+        GROUP BY account
     );
 
 -- +credits: to-account receives amount
