@@ -62,7 +62,7 @@ INSERT INTO metadata_rpc (
 )
 VALUES
 (
-    'TXYZ1234567890ABCDEF1234567890ABCDEF',  -- contract
+    'T0000000000000000000000000000000000000001',  -- contract
     '0x06',                                  -- decimals_hex (6 in hex)
     '0x54726f6e',                            -- name_hex ('Tron')
     '0x545258'                               -- symbol_hex ('TRX')
