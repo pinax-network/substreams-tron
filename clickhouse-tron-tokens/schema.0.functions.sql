@@ -61,3 +61,24 @@ CREATE OR REPLACE FUNCTION abi_hex_to_uint256 AS (hex) ->
             )
         )
     );
+
+CREATE OR REPLACE FUNCTION abi_hex_to_uint256_or_zero AS (hex) ->
+    if(
+        hex IS NULL OR length(replaceRegexpAll(hex, '\\s+', '')) = 0,
+        toUInt256(0),
+        toUInt256(
+            reinterpretAsUInt256(
+                padLeft(
+                    unhex(
+                        if(
+                            length(replaceRegexpAll(lower(hex), '\\s+', '')) % 2 = 1,
+                            concat('0', replaceRegexpAll(lower(hex), '\\s+', '')),
+                            replaceRegexpAll(lower(hex), '\\s+', '')
+                        )
+                    ),
+                    32, -- pad to 32 bytes (256 bits)
+                    toUInt8(0)
+                )
+            )
+        )
+    );

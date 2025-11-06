@@ -1,6 +1,6 @@
 -- Views for balances derived from trc20_transfer table --
 -- for `/balances`, `/holders`
-CREATE OR REPLACE VIEW trc20_balances AS
+CREATE OR REPLACE VIEW trc20_balances_agg AS
 SELECT
     -- order keys --
     log_address,
