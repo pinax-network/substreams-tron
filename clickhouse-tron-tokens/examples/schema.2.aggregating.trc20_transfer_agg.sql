@@ -70,6 +70,28 @@ ALTER TABLE trc20_transfer_agg
             sum(transactions_out)
         GROUP BY log_address, account
     ),
+    ADD PROJECTION IF NOT EXISTS prj_log_address_date (
+        SELECT
+            -- order keys --
+            log_address,
+            date,
+
+            -- balances --
+            sum(amount_in),
+            sum(amount_out),
+            sum(amount_delta),
+
+            -- stats --
+            count(),
+            min(min_timestamp),
+            max(max_timestamp),
+            min(min_block_num),
+            max(max_block_num),
+            sum(transactions),
+            sum(transactions_in),
+            sum(transactions_out)
+        GROUP BY log_address, date
+    ),
     -- used for `/balances`
     ADD PROJECTION IF NOT EXISTS prj_account_log_address (
         SELECT
@@ -131,6 +153,23 @@ ALTER TABLE trc20_transfer_agg
             sum(transactions_in),
             sum(transactions_out)
         GROUP BY account
+    ),
+    -- used to find dates per log_address
+    ADD PROJECTION IF NOT EXISTS prj_log_address_date_keys (
+        SELECT
+            -- order keys --
+            log_address,
+            date,
+            count(),
+        GROUP BY log_address, date
+        ORDER BY (log_address, date)
+    ),
+    ADD PROJECTION IF NOT EXISTS prj_log_address_date_keys (
+        SELECT
+            -- order keys --
+            log_address,
+            date
+        ORDER BY (log_address, date)
     );
 
 -- +credits: to-account receives amount

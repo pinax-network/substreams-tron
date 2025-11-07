@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS trc20_balances_rpc (
     account                  String,
     balance_hex              String,
     -- DEFAULT balance is required to allow filtering by >0 balance
-    balance                  Nullable(UInt256) DEFAULT abi_hex_to_uint256(balance_hex),
+    balance                  UInt256 DEFAULT abi_hex_to_uint256_or_zero(balance_hex),
     last_update              DateTime('UTC') DEFAULT now(),
     error                    LowCardinality(String) DEFAULT '',
 
@@ -17,14 +17,14 @@ CREATE TABLE IF NOT EXISTS trc20_balances_rpc (
     INDEX idx_balance (balance) TYPE minmax GRANULARITY 1,
     INDEX idx_error (error) TYPE set(10) GRANULARITY 1,
     INDEX idx_is_ok (is_ok) TYPE set(2) GRANULARITY 1,
-
-    -- projections --
-    PROJECTION prj_account_contract_ok (
-        SELECT contract, account, balance, last_update ORDER BY (account, contract)
-    )
 )
 ENGINE = ReplacingMergeTree(last_update)
-ORDER BY ( contract, account );
+ORDER BY ( account, contract );
+
+ALTER TABLE trc20_balances_rpc
+    MODIFY SETTING deduplicate_merge_projection_mode = 'rebuild';
+
+ALTER TABLE trc20_balances_rpc ADD PROJECTION IF NOT EXISTS prj_contract_account ( SELECT * ORDER BY ( contract, account ) );
 
 -- VIEW for easier querying
 CREATE OR REPLACE VIEW trc20_balances AS
@@ -34,4 +34,4 @@ SELECT
     balance,
     last_update
 FROM trc20_balances_rpc
-WHERE error = '';
+WHERE is_ok = 1;
