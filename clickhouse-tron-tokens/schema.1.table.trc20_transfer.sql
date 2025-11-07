@@ -8,11 +8,18 @@ ALTER TABLE trc20_transfer
     ADD COLUMN IF NOT EXISTS amount        UInt256,
 
     -- indexes --
-    ADD INDEX IF NOT EXISTS idx_from (from) TYPE bloom_filter GRANULARITY 1,
-    ADD INDEX IF NOT EXISTS idx_to (to) TYPE bloom_filter GRANULARITY 1,
     ADD INDEX IF NOT EXISTS idx_amount (amount) TYPE minmax GRANULARITY 1,
 
-    -- projections (filters by minute) --
-    ADD PROJECTION IF NOT EXISTS prj_log_address_by_relative_minute (SELECT log_address, toRelativeMinuteNum(timestamp) AS minute GROUP BY log_address, minute),
-    ADD PROJECTION IF NOT EXISTS prj_from_by_relative_minute (SELECT `from`, toRelativeMinuteNum(timestamp) as minute GROUP BY `from`, minute),
-    ADD PROJECTION IF NOT EXISTS prj_to_by_relative_minute (SELECT `to`, toRelativeMinuteNum(timestamp) as minute GROUP BY `to`, minute);
+    -- projections --
+    -- used for WHERE from IN (...) AND minute IN (...) queries --
+    -- from/to --
+    ADD PROJECTION IF NOT EXISTS prj_from_by_minute ( SELECT `from`, date, hour, minute, count(), sum(amount) GROUP BY `from`, date, hour, minute ),
+    ADD PROJECTION IF NOT EXISTS prj_to_by_minute ( SELECT `to`, date, hour, minute, count(), sum(amount) GROUP BY `to`, date, hour, minute ),
+
+    -- log_address + from/to --
+    ADD PROJECTION IF NOT EXISTS prj_log_address_from ( SELECT log_address, `from`, date, hour, minute, count(), sum(amount) GROUP BY log_address, `from`, date, hour, minute ),
+    ADD PROJECTION IF NOT EXISTS prj_log_address_to ( SELECT log_address, `to`, date, hour, minute, count(), sum(amount) GROUP BY log_address, `to`, date, hour, minute ),
+
+    -- log_address + from + to --
+    ADD PROJECTION IF NOT EXISTS prj_log_address_from_to ( SELECT log_address, `from`, `to`, date, hour, minute, count(), sum(amount) GROUP BY log_address, `from`, `to`, date, hour, minute ),
+    ADD PROJECTION IF NOT EXISTS prj_log_address_to_from ( SELECT log_address, `to`, `from`, date, hour, minute, count(), sum(amount) GROUP BY log_address, `to`, `from`, date, hour, minute );
