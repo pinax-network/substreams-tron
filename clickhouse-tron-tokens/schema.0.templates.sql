@@ -49,8 +49,9 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
 
     -- projections by timestamp --
     -- helpful for filtering by time ranges --
-    -- tx_hash --
-    PROJECTION prj_tx_hash_by_timestamp ( SELECT tx_hash, timestamp ORDER BY tx_hash, timestamp ),
+    -- tx_hash/block_hash --
+    PROJECTION prj_tx_hash_by_timestamp ( SELECT tx_hash, timestamp, count() GROUP BY tx_hash, timestamp ),
+    PROJECTION prj_block_hash_by_timestamp ( SELECT block_hash, timestamp, count() GROUP BY block_hash, timestamp ),
 
     -- tx_from/to --
     PROJECTION prj_tx_from_by_minute ( SELECT tx_from, date, hour, minute, count() GROUP BY tx_from, date, hour, minute ),
@@ -65,16 +66,14 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
 )
 ENGINE = MergeTree
 ORDER BY (
-    timestamp, block_num,
-    block_hash, tx_index, log_index
+    timestamp, block_num, tx_index, log_index
 );
 
 -- Template for Transactions (without log fields) --
 CREATE TABLE IF NOT EXISTS TEMPLATE_TRANSACTION AS TEMPLATE_LOG
 ENGINE = MergeTree
 ORDER BY (
-    timestamp, block_num,
-    block_hash, tx_index
+    timestamp, block_num, tx_index
 );
 ALTER TABLE TEMPLATE_TRANSACTION
     DROP PROJECTION IF EXISTS prj_log_address_by_minute,
