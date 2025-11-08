@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     PROJECTION prj_tx_to_by_minute ( SELECT tx_to, date, hour, minute, count() GROUP BY tx_to, date, hour, minute ),
 
     -- tx_from + tx_to --
-    PROJECTION prj_tx_from_to ( SELECT tx_from, tx_to, date, hour, minute, count() GROUP BY tx_from, tx_to, date, hour, minute ),
-    PROJECTION prj_tx_to_from ( SELECT tx_to, tx_from, date, hour, minute, count() GROUP BY tx_to, tx_from, date, hour, minute ),
+    PROJECTION prj_tx_from_to_by_minute ( SELECT tx_from, tx_to, date, hour, minute, count() GROUP BY tx_from, tx_to, date, hour, minute ),
+    PROJECTION prj_tx_to_from_by_minute ( SELECT tx_to, tx_from, date, hour, minute, count() GROUP BY tx_to, tx_from, date, hour, minute ),
 
     -- log_address --
     PROJECTION prj_log_address_by_minute ( SELECT log_address, date, hour, minute, count() GROUP BY log_address, date, hour, minute )

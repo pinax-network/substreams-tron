@@ -17,5 +17,5 @@ ALTER TABLE native_transfer
     ADD PROJECTION IF NOT EXISTS prj_to_by_minute ( SELECT `to`, date, hour, minute, count(), sum(amount) GROUP BY `to`, date, hour, minute ),
 
     -- from + to --
-    ADD PROJECTION IF NOT EXISTS prj_from_to ( SELECT `from`, `to`, date, hour, minute, count(), sum(amount) GROUP BY `from`, `to`, date, hour, minute ),
-    ADD PROJECTION IF NOT EXISTS prj_to_from ( SELECT `to`, `from`, date, hour, minute, count(), sum(amount) GROUP BY `to`, `from`, date, hour, minute );
+    ADD PROJECTION IF NOT EXISTS prj_from_to_by_minute ( SELECT `from`, `to`, date, hour, minute, count(), sum(amount) GROUP BY `from`, `to`, date, hour, minute ),
+    ADD PROJECTION IF NOT EXISTS prj_to_from_by_minute ( SELECT `to`, `from`, date, hour, minute, count(), sum(amount) GROUP BY `to`, `from`, date, hour, minute );
