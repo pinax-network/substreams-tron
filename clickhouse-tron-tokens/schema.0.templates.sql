@@ -26,27 +26,6 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     log_ordinal                 UInt32,
     -- log_topic0                  String, -- only available in tron-tokens-v0.1.1
 
-    -- indexes --
-    INDEX idx_block_num         (block_num)             TYPE minmax                 GRANULARITY 1,
-    INDEX idx_timestamp         (timestamp)             TYPE minmax                 GRANULARITY 1,
-    INDEX idx_minute            (minute)                TYPE minmax                 GRANULARITY 1,
-    INDEX idx_hour              (hour)                  TYPE minmax                 GRANULARITY 1,
-    INDEX idx_date              (date)                  TYPE minmax                 GRANULARITY 1,
-
-    -- indexes (transaction) --
-    INDEX idx_tx_value          (tx_value)              TYPE minmax                 GRANULARITY 1,
-    INDEX idx_tx_nonce          (tx_nonce)              TYPE minmax                 GRANULARITY 1,
-    INDEX idx_tx_gas_price      (tx_gas_price)          TYPE minmax                 GRANULARITY 1,
-    INDEX idx_tx_gas_limit      (tx_gas_limit)          TYPE minmax                 GRANULARITY 1,
-    INDEX idx_tx_gas_used       (tx_gas_used)           TYPE minmax                 GRANULARITY 1,
-
-    -- indexes (ordering) --
-    INDEX idx_tx_index          (tx_index)              TYPE minmax                 GRANULARITY 1,
-    INDEX idx_log_index         (log_index)             TYPE minmax                 GRANULARITY 1,
-
-    -- indexes (log) --
-    INDEX idx_log_ordinal       (log_ordinal)           TYPE minmax                 GRANULARITY 1,
-
     -- projections by timestamp --
     -- helpful for filtering by time ranges --
     -- tx_hash/block_hash --
@@ -56,10 +35,6 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     -- tx_from/to --
     PROJECTION prj_tx_from_by_minute ( SELECT tx_from, date, hour, minute, count() GROUP BY tx_from, date, hour, minute ),
     PROJECTION prj_tx_to_by_minute ( SELECT tx_to, date, hour, minute, count() GROUP BY tx_to, date, hour, minute ),
-
-    -- tx_from + tx_to --
-    PROJECTION prj_tx_from_to_by_minute ( SELECT tx_from, tx_to, date, hour, minute, count() GROUP BY tx_from, tx_to, date, hour, minute ),
-    PROJECTION prj_tx_to_from_by_minute ( SELECT tx_to, tx_from, date, hour, minute, count() GROUP BY tx_to, tx_from, date, hour, minute ),
 
     -- log_address --
     PROJECTION prj_log_address_by_minute ( SELECT log_address, date, hour, minute, count() GROUP BY log_address, date, hour, minute )
