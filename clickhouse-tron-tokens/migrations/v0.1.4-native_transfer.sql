@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS native_transfer_minutes ON CLUSTER 'tokenapis-a' (
     -- from + to --
     PROJECTION prj_to_from_by_minute ( SELECT `to`, `from`, minute, count() GROUP BY `to`, `from`, minute )
 )
-ENGINE = ReplacingMergeTree
+ENGINE = ReplicatedReplacingMergeTree
 ORDER BY (`from`, `to`, minute)
 SETTINGS deduplicate_merge_projection_mode = 'rebuild';
 

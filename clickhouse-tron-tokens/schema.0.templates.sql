@@ -25,6 +25,11 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     log_address                 LowCardinality(String),
     log_ordinal                 UInt32,
     -- log_topic0                  String, -- only available in tron-tokens-v0.1.1
+
+    -- projections --
+    PROJECTION prj_block_hash_by_timestamp ( SELECT block_hash, timestamp, count() GROUP BY block_hash, timestamp ),
+    PROJECTION prj_tx_hash_by_timestamp ( SELECT tx_hash, timestamp, count() GROUP BY tx_hash, timestamp ),
+    PROJECTION prj_log_address_by_minute ( SELECT log_address, minute, count() GROUP BY log_address, minute )
 )
 ENGINE = MergeTree
 ORDER BY (

@@ -1,81 +1,40 @@
 -- TRC20 transfer by minutes
 -- used for optimizing queries that need to filter by minute intervals
-CREATE TABLE IF NOT EXISTS trc20_transfer_log_address_minutes (
+CREATE TABLE IF NOT EXISTS trc20_transfer_minutes (
+    -- order keys --
     log_address         LowCardinality(String) COMMENT 'token contract address',
+    `from`              String COMMENT 'from sender address',
+    `to`                String COMMENT 'to receiver address',
     minute              DateTime('UTC') COMMENT 'start minute of the transfers',
+
+    -- projections --
+    -- log_address / from / to --
+    PROJECTION prj_log_address_by_minute ( SELECT log_address, minute, count() GROUP BY log_address, minute ),
+    PROJECTION prj_from_by_minute ( SELECT `from`, minute, count() GROUP BY `from`, minute ),
+    PROJECTION prj_to_by_minute ( SELECT `to`, minute, count() GROUP BY `to`, minute ),
+
+    -- log_address + from / to --
+    PROJECTION prj_log_address_from_by_minute ( SELECT log_address, `from`, minute, count() GROUP BY log_address, `from`, minute ),
+    PROJECTION prj_log_address_to_by_minute ( SELECT log_address, `to`, minute, count() GROUP BY log_address, `to`, minute),
+
+    -- log_address + to + from --
+    PROJECTION prj_log_address_to_from_by_minute ( SELECT log_address, `to`, `from`, minute, count() GROUP BY log_address, `to`, `from`, minute )
 )
 ENGINE = ReplacingMergeTree
-ORDER BY (log_address, minute)
-SETTINGS index_granularity = 1048576; -- 128x larger granularity for better compression
+ORDER BY (log_address, `from`, `to`, minute)
+SETTINGS deduplicate_merge_projection_mode = 'rebuild';
 
-CREATE TABLE IF NOT EXISTS trc20_transfer_from_minutes (
-    `from`              LowCardinality(String) COMMENT 'sender address',
-    minute              DateTime('UTC') COMMENT 'start minute of the transfers',
-)
-ENGINE = ReplacingMergeTree
-ORDER BY (`from`, minute)
-SETTINGS index_granularity = 524288; -- 64x larger granularity for better compression
-
-CREATE TABLE IF NOT EXISTS trc20_transfer_to_minutes (
-    `to`                LowCardinality(String) COMMENT 'recipient address',
-    minute              DateTime('UTC') COMMENT 'start minute of the transfers',
-)
-ENGINE = ReplacingMergeTree
-ORDER BY (`to`, minute)
-SETTINGS index_granularity = 524288; -- 64x larger granularity for better compression
-
-CREATE TABLE IF NOT EXISTS trc20_transfer_tx_hash_timestamps (
-    tx_hash             String COMMENT 'transaction hash',
-    timestamp           DateTime('UTC') COMMENT 'timestamp of transfers',
-)
-ENGINE = ReplacingMergeTree
-ORDER BY (tx_hash, timestamp)
-SETTINGS index_granularity = 2048; -- 0.25x smaller granularity for better query performance
-
-CREATE TABLE IF NOT EXISTS trc20_transfer_block_hash_timestamps (
-    block_hash          String COMMENT 'block hash',
-    timestamp           DateTime('UTC') COMMENT 'timestamp of transfers',
-)
-ENGINE = ReplacingMergeTree
-ORDER BY (block_hash, timestamp)
-SETTINGS index_granularity = 2048; -- 0.25x smaller granularity for better query performance
-
--- log_address -- minute MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_log_address_minutes
-TO trc20_transfer_log_address_minutes
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_minutes
+TO trc20_transfer_minutes
 AS
-SELECT log_address, toStartOfMinute(timestamp) AS minute
+SELECT
+    log_address,
+    `from`,
+    `to`,
+    toStartOfMinute(timestamp) AS minute
 FROM trc20_transfer
-GROUP BY log_address, minute;
-
--- from -- minute MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_from_minutes
-TO trc20_transfer_from_minutes
-AS
-SELECT `from`, toStartOfMinute(timestamp) AS minute
-FROM trc20_transfer
-GROUP BY `from`, minute;
-
--- to -- minute MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_to_minutes
-TO trc20_transfer_to_minutes
-AS
-SELECT `to`, toStartOfMinute(timestamp) AS minute
-FROM trc20_transfer
-GROUP BY `to`, minute;
-
--- tx_hash -- timestamp MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_tx_hash_timestamps
-TO trc20_transfer_tx_hash_timestamps
-AS
-SELECT tx_hash, timestamp
-FROM trc20_transfer
-GROUP BY tx_hash, timestamp;
-
--- block_hash -- timestamp MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_trc20_transfer_block_hash_timestamps
-TO trc20_transfer_block_hash_timestamps
-AS
-SELECT block_hash, timestamp
-FROM trc20_transfer
-GROUP BY block_hash, timestamp;
+GROUP BY
+    log_address,
+    `from`,
+    `to`,
+    minute;

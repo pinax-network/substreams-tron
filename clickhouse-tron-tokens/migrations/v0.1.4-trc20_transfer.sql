@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS trc20_transfer_minutes ON CLUSTER 'tokenapis-a'  (
     -- log_address + to + from --
     PROJECTION prj_log_address_to_from_by_minute ( SELECT log_address, `to`, `from`, minute, count() GROUP BY log_address, `to`, `from`, minute )
 )
-ENGINE = ReplacingMergeTree
+ENGINE = ReplicatedReplacingMergeTree
 ORDER BY (log_address, `from`, `to`, minute)
 SETTINGS deduplicate_merge_projection_mode = 'rebuild';
 

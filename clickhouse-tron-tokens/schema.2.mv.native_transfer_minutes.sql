@@ -1,65 +1,32 @@
 -- Native transfer by minutes
--- used for optimizing queries that need to filter by minute intervals
-CREATE TABLE IF NOT EXISTS native_transfer_from_minutes (
-    `from`              LowCardinality(String) COMMENT 'sender address',
+-- Used for optimizing queries that need to filter by minute intervals
+CREATE TABLE IF NOT EXISTS native_transfer_minutes (
+    -- order keys --
+    `from`              String COMMENT 'from sender address',
+    `to`                String COMMENT 'to receiver address',
     minute              DateTime('UTC') COMMENT 'start minute of the transfers',
+
+    -- projections --
+    -- from / to --
+    PROJECTION prj_from_by_minute ( SELECT `from`, minute, count() GROUP BY `from`, minute ),
+    PROJECTION prj_to_by_minute ( SELECT `to`, minute, count() GROUP BY `to`, minute ),
+
+    -- from + to --
+    PROJECTION prj_to_from_by_minute ( SELECT `to`, `from`, minute, count() GROUP BY `to`, `from`, minute )
 )
 ENGINE = ReplacingMergeTree
-ORDER BY (`from`, minute)
-SETTINGS index_granularity = 524288; -- 64x larger granularity for better compression
+ORDER BY (`from`, `to`, minute)
+SETTINGS deduplicate_merge_projection_mode = 'rebuild';
 
-CREATE TABLE IF NOT EXISTS native_transfer_to_minutes (
-    `to`                LowCardinality(String) COMMENT 'recipient address',
-    minute              DateTime('UTC') COMMENT 'start minute of the transfers',
-)
-ENGINE = ReplacingMergeTree
-ORDER BY (`to`, minute)
-SETTINGS index_granularity = 524288; -- 64x larger granularity for better compression
-
-CREATE TABLE IF NOT EXISTS native_transfer_tx_hash_timestamps (
-    tx_hash             String COMMENT 'transaction hash',
-    timestamp           DateTime('UTC') COMMENT 'timestamp of transfers',
-)
-ENGINE = ReplacingMergeTree
-ORDER BY (tx_hash, timestamp)
-SETTINGS index_granularity = 2048; -- 0.25x smaller granularity for better query performance
-
-CREATE TABLE IF NOT EXISTS native_transfer_block_hash_timestamps (
-    block_hash          String COMMENT 'block hash',
-    timestamp           DateTime('UTC') COMMENT 'timestamp of transfers',
-)
-ENGINE = ReplacingMergeTree
-ORDER BY (block_hash, timestamp)
-SETTINGS index_granularity = 2048; -- 0.25x smaller granularity for better query performance
-
--- from -- minute MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_native_transfer_from_minutes
-TO native_transfer_from_minutes
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_native_transfer_minutes
+TO native_transfer_minutes
 AS
-SELECT `from`, toStartOfMinute(timestamp) AS minute
+SELECT
+    `from`,
+    `to`,
+    toStartOfMinute(timestamp) AS minute
 FROM native_transfer
-GROUP BY `from`, minute;
-
--- to -- minute MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_native_transfer_to_minutes
-TO native_transfer_to_minutes
-AS
-SELECT `to`, toStartOfMinute(timestamp) AS minute
-FROM native_transfer
-GROUP BY `to`, minute;
-
--- tx_hash -- timestamp MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_native_transfer_tx_hash_timestamps
-TO native_transfer_tx_hash_timestamps
-AS
-SELECT tx_hash, timestamp
-FROM native_transfer
-GROUP BY tx_hash, timestamp;
-
--- block_hash -- timestamp MV
-CREATE MATERIALIZED VIEW IF NOT EXISTS mv_native_transfer_block_hash_timestamps
-TO native_transfer_block_hash_timestamps
-AS
-SELECT block_hash, timestamp
-FROM native_transfer
-GROUP BY block_hash, timestamp;
+GROUP BY
+    `from`,
+    `to`,
+    minute;

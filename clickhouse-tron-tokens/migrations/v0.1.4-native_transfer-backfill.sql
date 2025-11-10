@@ -1,5 +1,5 @@
 INSERT INTO native_transfer_minutes
-SELECT DISTINCT
+SELECT
     `from`,
     `to`,
     toStartOfMinute(timestamp) AS minute

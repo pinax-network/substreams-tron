@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: clickhouse_tron_tokens
-  version: v0.1.5
+  version: v0.1.4
   url: https://github.com/pinax-network/substreams-tron
   description: TRC-20 & Native transfers
   image: ../image.png
