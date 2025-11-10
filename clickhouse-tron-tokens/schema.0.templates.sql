@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     -- block --
     block_num                   UInt32,
     block_hash                  String,
-    timestamp                   DateTime(0, 'UTC'),
+    timestamp                   DateTime('UTC'),
 
     -- derived time fields --
     minute                     DateTime('UTC') MATERIALIZED toStartOfMinute(timestamp),
@@ -25,19 +25,6 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     log_address                 LowCardinality(String),
     log_ordinal                 UInt32,
     -- log_topic0                  String, -- only available in tron-tokens-v0.1.1
-
-    -- projections by timestamp --
-    -- helpful for filtering by time ranges --
-    -- tx_hash/block_hash --
-    PROJECTION prj_tx_hash_by_timestamp ( SELECT tx_hash, timestamp, count() GROUP BY tx_hash, timestamp ),
-    PROJECTION prj_block_hash_by_timestamp ( SELECT block_hash, timestamp, count() GROUP BY block_hash, timestamp ),
-
-    -- tx_from/to --
-    PROJECTION prj_tx_from_by_minute ( SELECT tx_from, date, hour, minute, count() GROUP BY tx_from, date, hour, minute ),
-    PROJECTION prj_tx_to_by_minute ( SELECT tx_to, date, hour, minute, count() GROUP BY tx_to, date, hour, minute ),
-
-    -- log_address --
-    PROJECTION prj_log_address_by_minute ( SELECT log_address, date, hour, minute, count() GROUP BY log_address, date, hour, minute )
 )
 ENGINE = MergeTree
 ORDER BY (

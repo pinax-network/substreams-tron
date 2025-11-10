@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS native_transfer AS TEMPLATE_TRANSACTION
 COMMENT 'Native TRX Transfer events from transactions';
 ALTER TABLE native_transfer
-    -- transfer information --
+    -- transfer --
     ADD COLUMN IF NOT EXISTS `from`        String,
     ADD COLUMN IF NOT EXISTS `to`          String,
     ADD COLUMN IF NOT EXISTS amount        UInt256,

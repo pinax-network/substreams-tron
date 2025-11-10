@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS trc20_transfer AS TEMPLATE_LOG
 COMMENT 'TRC20 Token Transfer events from logs';
 ALTER TABLE trc20_transfer
-    -- transfer event information --
+    -- transfer --
     ADD COLUMN IF NOT EXISTS `from`        String,
     ADD COLUMN IF NOT EXISTS `to`          String,
     ADD COLUMN IF NOT EXISTS amount        UInt256,
