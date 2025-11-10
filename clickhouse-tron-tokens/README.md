@@ -1,6 +1,6 @@
-# ClickHouse TRON Tokens
+# `clickhouse-tron-tokens`
 
-Substreams for tracking Token transfers for both Native & TRC-20 on the TRON blockchain with ClickHouse database schema templates.
+TRC-20 & Native transfers
 
 ## Features
 
