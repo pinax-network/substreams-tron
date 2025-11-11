@@ -43,14 +43,16 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
 )
 ENGINE = MergeTree
 ORDER BY (
-    minute, timestamp, block_num, tx_index, log_index
+    minute, timestamp, block_num,
+    tx_index, log_index
 );
 
 -- Template for Transactions (without log fields) --
 CREATE TABLE IF NOT EXISTS TEMPLATE_TRANSACTION AS TEMPLATE_LOG
 ENGINE = MergeTree
 ORDER BY (
-    minute, timestamp, block_num, tx_index
+    minute, timestamp, block_num,
+    tx_index
 );
 ALTER TABLE TEMPLATE_TRANSACTION
     DROP PROJECTION IF EXISTS prj_log_address_by_minute,

@@ -9,6 +9,6 @@ CREATE TABLE IF NOT EXISTS blocks (
 )
 ENGINE = MergeTree
 ORDER BY (
-    minute, timestamp, block_num, block_hash
+    minute, timestamp, block_num
 )
 COMMENT 'TRON blocks';
