@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: clickhouse_tron_tokens
-  version: v0.1.4
+  version: v0.2.0
   url: https://github.com/pinax-network/substreams-tron
   description: TRC-20 & Native transfers
   image: ../image.png
@@ -21,16 +21,16 @@ binaries:
     file: ../target/wasm32-unknown-unknown/release/clickhouse_tron_tokens.wasm
 
 modules:
-  - name: db_out
-    use: clickhouse_tokens_v0_1_0:db_out
-
   # - name: db_out
-  #   kind: map
-  #   inputs:
-  #     - source: sf.substreams.v1.Clock
-  #     - map: transfers:map_events
-  #   output:
-  #     type: proto:sf.substreams.sink.database.v1.DatabaseChanges
+  #   use: clickhouse_tokens_v0_1_0:db_out
+
+  - name: db_out
+    kind: map
+    inputs:
+      - source: sf.substreams.v1.Clock
+      - map: transfers_v0_1_0:map_events
+    output:
+      type: proto:sf.substreams.sink.database.v1.DatabaseChanges
 
 sink:
   module: db_out

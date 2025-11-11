@@ -32,5 +32,6 @@ pub fn set_clock(clock: &Clock, row: &mut substreams_database_change::tables::Ro
     row.set("block_hash", &clock.id);
     if let Some(timestamp) = &clock.timestamp {
         row.set("timestamp", timestamp.seconds);
+        row.set("minute", timestamp.seconds / 60);
     }
 }

@@ -5,9 +5,7 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     timestamp                   DateTime('UTC'),
 
     -- derived time fields --
-    minute                     DateTime('UTC') MATERIALIZED toStartOfMinute(timestamp),
-    hour                       DateTime('UTC') MATERIALIZED toStartOfHour(timestamp),
-    date                       Date MATERIALIZED toDate(timestamp),
+    minute                      UInt32 COMMENT 'toRelativeMinuteNum(timestamp)',
 
     -- transaction --
     tx_index                    UInt32, -- derived from Substreams
@@ -24,30 +22,41 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     log_index                   UInt32, -- derived from Substreams
     log_address                 LowCardinality(String),
     log_ordinal                 UInt32,
-    -- log_topic0                  String, -- only available in tron-tokens-v0.1.1
+    log_topic0                  String, -- only available in tron-tokens-v0.1.1
 
-    -- projections --
-    PROJECTION prj_block_hash_by_timestamp ( SELECT block_hash, timestamp, count() GROUP BY block_hash, timestamp ),
-    PROJECTION prj_tx_hash_by_timestamp ( SELECT tx_hash, timestamp, count() GROUP BY tx_hash, timestamp ),
+    -- INDEXES --
+    INDEX idx_tx_value (tx_value) TYPE minmax GRANULARITY 1,
+    INDEX idx_log_ordinal (log_ordinal) TYPE minmax GRANULARITY 1,
+
+    -- PROJECTIONS --
+    -- count() --
+    PROJECTION prj_tx_from_count ( SELECT tx_from, count() GROUP BY tx_from ),
+    PROJECTION prj_tx_to_count ( SELECT tx_to, count() GROUP BY tx_to ),
+    PROJECTION prj_tx_to_from_count ( SELECT tx_to, tx_from, count() GROUP BY tx_to, tx_from ),
+    PROJECTION prj_log_topic0_count ( SELECT log_topic0, count() GROUP BY log_topic0 ),
+    PROJECTION prj_log_address_count ( SELECT log_address, count() GROUP BY log_address ),
+
+    -- minute --
+    PROJECTION prj_block_hash_by_timestamp ( SELECT block_hash, minute, timestamp, count() GROUP BY block_hash, minute,timestamp ),
+    PROJECTION prj_tx_hash_by_timestamp ( SELECT tx_hash, minute, timestamp, count() GROUP BY tx_hash, minute, timestamp ),
     PROJECTION prj_log_address_by_minute ( SELECT log_address, minute, count() GROUP BY log_address, minute )
 )
 ENGINE = MergeTree
 ORDER BY (
-    timestamp, block_num, tx_index, log_index
+    minute, timestamp, block_num, tx_index, log_index
 );
 
 -- Template for Transactions (without log fields) --
 CREATE TABLE IF NOT EXISTS TEMPLATE_TRANSACTION AS TEMPLATE_LOG
 ENGINE = MergeTree
 ORDER BY (
-    timestamp, block_num, tx_index
+    minute, timestamp, block_num, tx_index
 );
 ALTER TABLE TEMPLATE_TRANSACTION
     DROP PROJECTION IF EXISTS prj_log_address_by_minute,
-    DROP INDEX IF EXISTS idx_log_index,
-    DROP INDEX IF EXISTS idx_log_address,
+    DROP PROJECTION IF EXISTS prj_log_topic0_count,
+    DROP PROJECTION IF EXISTS prj_log_address_count,
     DROP INDEX IF EXISTS idx_log_ordinal,
-    -- DROP INDEX IF EXISTS idx_log_topic0, // only available in tron-tokens-v0.1.1
     DROP COLUMN IF EXISTS log_index,
     DROP COLUMN IF EXISTS log_address,
     DROP COLUMN IF EXISTS log_ordinal,

@@ -2,11 +2,13 @@ CREATE TABLE IF NOT EXISTS blocks (
     block_num                   UInt32,
     block_hash                  String,
     timestamp                   DateTime(0, 'UTC'),
+    minute                      UInt32 COMMENT 'toRelativeMinuteNum(timestamp)',
 
-    -- indexes --
-    INDEX idx_block_hash     (block_hash)   TYPE bloom_filter(0.01) GRANULARITY 1,
-    INDEX idx_timestamp      (timestamp)    TYPE minmax GRANULARITY 1
-
-) ENGINE = ReplacingMergeTree(timestamp) -- in case of reorgs, keep the latest block by timestamp
-ORDER BY block_num
+    -- PROJECTIONS --
+    PROJECTION prj_block_hash ( SELECT * ORDER BY block_hash )
+)
+ENGINE = MergeTree
+ORDER BY (
+    minute, timestamp, block_num, block_hash
+)
 COMMENT 'TRON blocks';

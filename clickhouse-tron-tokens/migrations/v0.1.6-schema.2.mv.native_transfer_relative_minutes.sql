@@ -1,10 +1,10 @@
 -- Native transfer by minutes
 -- Used for optimizing queries that need to filter by minute intervals
-CREATE TABLE IF NOT EXISTS native_transfer_minutes (
+CREATE TABLE IF NOT EXISTS native_transfer_relative_minutes (
     -- order keys --
     `from`              String COMMENT 'from sender address',
     `to`                String COMMENT 'to receiver address',
-    minute              DateTime('UTC') COMMENT 'start minute of the transfers',
+    minute              DateTime('UTC') COMMENT 'toRelativeMinuteNum(timestamp) of the transfers',
 
     -- projections --
     -- from / to --
@@ -24,7 +24,7 @@ AS
 SELECT
     `from`,
     `to`,
-    toStartOfMinute(timestamp) AS minute
+    toRelativeMinuteNum(timestamp) AS minute
 FROM native_transfer
 GROUP BY
     `from`,
