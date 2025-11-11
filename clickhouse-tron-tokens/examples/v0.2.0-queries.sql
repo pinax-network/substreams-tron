@@ -1,27 +1,48 @@
--- count --
+-- count() --
+EXPLAIN indexes =1, projections =1
 SELECT
-    from,
+    log_address,
+    `from`,
+    `to`,
     count()
 FROM trc20_transfer
-GROUP BY from
+GROUP BY log_address, `from`, `to`
 ORDER BY count() DESC
 LIMIT 10
-
--- minute filter --
-EXPLAIN indexes =1, projections =1
-SELECT minute
-FROM trc20_transfer
-WHERE `from` = 'TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS'
-GROUP BY minute
 
 -- minute filter + transfers --
 EXPLAIN indexes =1, projections =1
 WITH minutes AS (
     SELECT minute
     FROM trc20_transfer
-    WHERE `from` = 'TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS'
+    WHERE log_address = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+     AND `from` = 'TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS'
     GROUP BY minute
 )
 SELECT * FROM trc20_transfer
 WHERE minute IN minutes
 LIMIT 10
+
+-- 1x filters --
+EXPLAIN indexes =1, projections =1
+SELECT minute
+FROM trc20_transfer
+WHERE log_address = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+GROUP BY minute
+
+-- 2x filters --
+EXPLAIN indexes =1, projections =1
+SELECT minute
+FROM trc20_transfer
+WHERE log_address = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+ AND `from` = 'TN12qS4gM6qs3B2R4XjuT2zf6BomaDGdRY'
+GROUP BY minute
+
+-- 3x filters --
+EXPLAIN indexes =1, projections =1
+SELECT minute
+FROM trc20_transfer
+WHERE log_address = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+ AND `from` = 'TN12qS4gM6qs3B2R4XjuT2zf6BomaDGdRY'
+ AND `to` = 'TT7wzwKZAdQNhqsyFjTDa3TkGxL7nU6EbD'
+GROUP BY minute
