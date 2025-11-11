@@ -1,5 +1,6 @@
 use proto::pb::tron::transfers::v1 as pb;
 use substreams_abis::evm::token::erc20::events;
+use substreams_abis::evm::tokens::weth::events as weth_events;
 use substreams_ethereum::pb::eth::v2::{Block, Log};
 use substreams_ethereum::Event;
 
@@ -18,6 +19,8 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
     let mut events = pb::Events::default();
     let mut total_trc20_transfers = 0;
     let mut total_native_transfers = 0;
+    let mut total_weth_deposits = 0;
+    let mut total_weth_withdrawals = 0;
 
     for trx in block.transactions() {
         let gas_price = trx.clone().gas_price.unwrap_or_default().with_decimal(0).to_string();
@@ -47,6 +50,24 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
                 });
                 transaction.logs.push(create_log(log, event));
             }
+
+            // WETH Deposit/Withdraw event
+            if let Some(event) = weth_events::Deposit::match_and_decode(log) {
+                total_weth_deposits += 1;
+                let event = pb::log::Log::Deposit(pb::Deposit {
+                    dst: event.dst.to_vec(),
+                    wad: event.wad.to_string(),
+                });
+                transaction.logs.push(create_log(log, event));
+            }
+            if let Some(event) = weth_events::Withdrawal::match_and_decode(log) {
+                total_weth_withdrawals += 1;
+                let event = pb::log::Log::Withdrawal(pb::Withdrawal {
+                    src: event.src.to_vec(),
+                    wad: event.wad.to_string(),
+                });
+                transaction.logs.push(create_log(log, event));
+            }
         }
         // Native transfer
         if !value.is_zero() {
@@ -61,5 +82,7 @@ fn map_events(block: Block) -> Result<pb::Events, substreams::errors::Error> {
     substreams::log::info!("Total Events: {}", events.transactions.len());
     substreams::log::info!("Total TRC20 Transfer events: {}", total_trc20_transfers);
     substreams::log::info!("Total Native transfers: {}", total_native_transfers);
+    substreams::log::info!("Total WETH Deposit events: {}", total_weth_deposits);
+    substreams::log::info!("Total WETH Withdrawal events: {}", total_weth_withdrawals);
     Ok(events)
 }

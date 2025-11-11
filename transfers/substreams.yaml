@@ -1,7 +1,7 @@
 specVersion: v0.1.0
 package:
   name: tron_transfers
-  version: v0.1.4
+  version: v0.2.0
   url: https://github.com/pinax-network/substreams-tron
   description: TRC20 & Native Transfers
   image: ../image.png

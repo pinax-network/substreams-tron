@@ -45,7 +45,7 @@ pub struct Log {
     pub topics: ::prost::alloc::vec::Vec<::prost::alloc::vec::Vec<u8>>,
     #[prost(bytes="vec", tag="4")]
     pub data: ::prost::alloc::vec::Vec<u8>,
-    #[prost(oneof="log::Log", tags="10")]
+    #[prost(oneof="log::Log", tags="10, 11, 12")]
     pub log: ::core::option::Option<log::Log>,
 }
 /// Nested message and enum types in `Log`.
@@ -55,6 +55,10 @@ pub mod log {
     pub enum Log {
         #[prost(message, tag="10")]
         Transfer(super::Transfer),
+        #[prost(message, tag="11")]
+        Deposit(super::Deposit),
+        #[prost(message, tag="12")]
+        Withdrawal(super::Withdrawal),
     }
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -67,5 +71,24 @@ pub struct Transfer {
     /// uint256
     #[prost(string, tag="3")]
     pub amount: ::prost::alloc::string::String,
+}
+/// WETH events
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Deposit {
+    #[prost(bytes="vec", tag="1")]
+    pub dst: ::prost::alloc::vec::Vec<u8>,
+    /// uint256
+    #[prost(string, tag="2")]
+    pub wad: ::prost::alloc::string::String,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Withdrawal {
+    #[prost(bytes="vec", tag="1")]
+    pub src: ::prost::alloc::vec::Vec<u8>,
+    /// uint256
+    #[prost(string, tag="2")]
+    pub wad: ::prost::alloc::string::String,
 }
 // @@protoc_insertion_point(module)

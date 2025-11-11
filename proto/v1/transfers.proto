@@ -25,11 +25,25 @@ message Log {
   uint64 ordinal = 2;
   repeated bytes topics = 3;
   bytes data = 4;
-  oneof log { Transfer transfer = 10; }
+  oneof log {
+    Transfer transfer = 10;
+    Deposit deposit = 11;
+    Withdrawal withdrawal = 12;
+  }
 }
 
 message Transfer {
   bytes from = 1;
   bytes to = 2;
   string amount = 3; // uint256
+}
+
+// WETH events
+message Deposit {
+  bytes dst = 1;
+  string wad = 2; // uint256
+}
+message Withdrawal {
+  bytes src = 1;
+  string wad = 2; // uint256
 }
