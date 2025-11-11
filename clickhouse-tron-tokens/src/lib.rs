@@ -1,6 +1,7 @@
 mod logs;
 mod native_transfers;
 mod transactions;
+mod weth;
 mod trc20_transfers;
 use substreams::pb::substreams::Clock;
 
@@ -17,6 +18,9 @@ pub fn db_out(clock: Clock, transfers: pb::transfers::v1::Events) -> Result<Data
 
     // Process transactions (Native transfers)
     native_transfers::process_events(&mut tables, &clock, &transfers);
+
+    // Process WETH events
+    weth::process_events(&mut tables, &clock, &transfers);
 
     // ONLY include blocks if events are present
     if !tables.tables.is_empty() {

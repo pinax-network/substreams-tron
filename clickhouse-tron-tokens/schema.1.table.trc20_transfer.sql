@@ -22,7 +22,6 @@ ALTER TABLE trc20_transfer
     ADD PROJECTION IF NOT EXISTS prj_log_address_from_to_count ( SELECT log_address, `to`, `from`, count() GROUP BY log_address, `to`, `from` ),
 
     -- minute: log_address | from | to --
-    ADD PROJECTION IF NOT EXISTS prj_log_address_by_minute ( SELECT log_address, minute, count() GROUP BY log_address, minute ),
     ADD PROJECTION IF NOT EXISTS prj_from_by_minute ( SELECT `from`, minute, count() GROUP BY `from`, minute ),
     ADD PROJECTION IF NOT EXISTS prj_to_by_minute ( SELECT `to`, minute, count() GROUP BY `to`, minute ),
 
