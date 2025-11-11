@@ -1,4 +1,4 @@
--- count() --
+-- count() TRC-20 --
 EXPLAIN indexes =1, projections =1
 SELECT
     log_address,
@@ -10,7 +10,18 @@ GROUP BY log_address, `from`, `to`
 ORDER BY count() DESC
 LIMIT 10
 
--- minute filter + transfers --
+-- count() Native --
+EXPLAIN indexes =1, projections =1
+SELECT
+    `from`,
+    `to`,
+    count()
+FROM native_transfer
+GROUP BY `from`, `to`
+ORDER BY count() DESC
+LIMIT 10
+
+-- minute filter + TRC-20 transfers --
 EXPLAIN indexes =1, projections =1
 WITH minutes AS (
     SELECT minute
@@ -20,6 +31,18 @@ WITH minutes AS (
     GROUP BY minute
 )
 SELECT * FROM trc20_transfer
+WHERE minute IN minutes
+LIMIT 10
+
+-- minute filter + Native transfers --
+EXPLAIN indexes =1, projections =1
+WITH minutes AS (
+    SELECT minute
+    FROM native_transfer
+    WHERE `from` = 'TU6UZuR8Z1adXK2e4TocXUg7YqyeWJiJLE' AND `to` = 'TCFNp179Lg46D16zKoumd4Poa2WFFdtqYj'
+    GROUP BY minute
+)
+SELECT * FROM native_transfer
 WHERE minute IN minutes
 LIMIT 10
 
