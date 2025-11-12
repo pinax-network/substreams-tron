@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS metadata_rpc (
     symbol                      String DEFAULT abi_hex_to_string(symbol_hex),
 
     -- error handling --
-    last_update                 DateTime('UTC') DEFAULT now(),
-    error                       String DEFAULT '',
-    is_ok                       UInt8 DEFAULT (error = ''), -- 1 if no error, 0 otherwise
+    created_at                  DateTime('UTC') DEFAULT now(),
+    error_msg                   String DEFAULT '',
+    is_ok                       UInt8 DEFAULT (error_msg = ''), -- 1 if no error, 0 otherwise
 
     -- PROJECTIONS --
     -- count() --

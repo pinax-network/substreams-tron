@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS trc20_balances_rpc (
     balance                     UInt256 DEFAULT abi_hex_to_uint256_or_zero(balance_hex),
 
     -- error handling --
-    last_update                 DateTime('UTC') DEFAULT now(),
-    error                       LowCardinality(String) DEFAULT '',
-    is_ok                       UInt8 DEFAULT (error = ''), -- 1 if no error, 0 otherwise
+    created_at                  DateTime('UTC') DEFAULT now(),
+    error_msg                   LowCardinality(String) DEFAULT '',
+    is_ok                       UInt8 DEFAULT (error_msg = ''), -- 1 if no error, 0 otherwise
 
     -- INDEXES --
     INDEX idx_balance           (balance) TYPE minmax GRANULARITY 1,
