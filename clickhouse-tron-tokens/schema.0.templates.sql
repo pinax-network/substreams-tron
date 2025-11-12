@@ -3,8 +3,6 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     block_num                   UInt32,
     block_hash                  String,
     timestamp                   DateTime('UTC'),
-
-    -- derived time fields --
     minute                      UInt32 COMMENT 'toRelativeMinuteNum(timestamp)',
 
     -- transaction --
