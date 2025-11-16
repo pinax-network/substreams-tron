@@ -19,7 +19,4 @@ ALTER TABLE native_transfer
 
     -- minute: from | to --
     ADD PROJECTION IF NOT EXISTS prj_from_by_minute ( SELECT `from`, minute, count() GROUP BY `from`, minute ),
-    ADD PROJECTION IF NOT EXISTS prj_to_by_minute ( SELECT `to`, minute, count() GROUP BY `to`, minute ),
-
-    -- minute: from + to --
-    ADD PROJECTION IF NOT EXISTS prj_to_from_by_minute ( SELECT `to`, `from`, minute, count() GROUP BY `to`, `from`, minute );
+    ADD PROJECTION IF NOT EXISTS prj_to_by_minute ( SELECT `to`, minute, count() GROUP BY `to`, minute );

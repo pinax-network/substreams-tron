@@ -14,12 +14,24 @@ LIMIT 10
 EXPLAIN indexes =1, projections =1
 SELECT
     `from`,
-    `to`,
     count()
 FROM native_transfer
-GROUP BY `from`, `to`
+GROUP BY `from`
 ORDER BY count() DESC
 LIMIT 10
+
+-- minute Native --
+EXPLAIN indexes =1, projections =1
+SELECT minute
+FROM native_transfer
+WHERE `from` = 'TAUN6FwrnwwmaEqYcckffC7wYmbaS6cBiX'
+GROUP BY minute
+
+EXPLAIN indexes =1, projections =1
+SELECT minute
+FROM native_transfer
+WHERE `to` = 'TKpn4QSQ6Q1fKkF67Ljz2qmnskrLXGi9tP'
+GROUP BY minute
 
 -- minute filter + TRC-20 transfers --
 EXPLAIN indexes =1, projections =1
@@ -58,17 +70,35 @@ GROUP BY minute
 EXPLAIN indexes =1, projections =1
 SELECT minute
 FROM trc20_transfer
+WHERE `from` = 'TN12qS4gM6qs3B2R4XjuT2zf6BomaDGdRY'
+GROUP BY minute
+
+INTERSECT ALL
+
+SELECT minute
+FROM trc20_transfer
 WHERE log_address = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
- AND `from` = 'TN12qS4gM6qs3B2R4XjuT2zf6BomaDGdRY'
 GROUP BY minute
 
 -- 3x filters --
 EXPLAIN indexes =1, projections =1
 SELECT minute
 FROM trc20_transfer
+WHERE `from` = 'TN12qS4gM6qs3B2R4XjuT2zf6BomaDGdRY'
+GROUP BY minute
+
+INTERSECT ALL
+
+SELECT minute
+FROM trc20_transfer
+WHERE`to` = 'TT7wzwKZAdQNhqsyFjTDa3TkGxL7nU6EbD'
+GROUP BY minute
+
+INTERSECT ALL
+
+SELECT minute
+FROM trc20_transfer
 WHERE log_address = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
- AND `from` = 'TN12qS4gM6qs3B2R4XjuT2zf6BomaDGdRY'
- AND `to` = 'TT7wzwKZAdQNhqsyFjTDa3TkGxL7nU6EbD'
 GROUP BY minute
 
 -- count() --
