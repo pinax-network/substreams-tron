@@ -25,6 +25,9 @@ ALTER TABLE swaps
     ADD INDEX IF NOT EXISTS idx_contract_pair_inv (output_contract, input_contract)       TYPE bloom_filter GRANULARITY 1,
 
     -- projections --
+    ADD PROJECTION IF NOT EXISTS prj_prj_input_contract_count ( SELECT input_contract, count(), min(block_num), max(block_num), min(timestamp), max(timestamp) GROUP BY input_contract ),
+    ADD PROJECTION IF NOT EXISTS prj_prj_output_contract_count ( SELECT output_contract, count(), min(block_num), max(block_num), min(timestamp), max(timestamp) GROUP BY output_contract ),
+
     ADD PROJECTION IF NOT EXISTS prj_protocol (SELECT protocol, timestamp, _part_offset ORDER BY (protocol, timestamp)),
     ADD PROJECTION IF NOT EXISTS prj_factory (SELECT factory, timestamp, _part_offset ORDER BY (factory, timestamp)),
     ADD PROJECTION IF NOT EXISTS prj_pool (SELECT pool, timestamp, _part_offset ORDER BY (pool, timestamp)),
