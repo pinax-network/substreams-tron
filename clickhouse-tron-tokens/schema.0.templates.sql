@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS TEMPLATE_LOG (
     PROJECTION prj_tx_to_count ( SELECT tx_to, count() GROUP BY tx_to ),
     PROJECTION prj_tx_to_from_count ( SELECT tx_to, tx_from, count() GROUP BY tx_to, tx_from ),
     PROJECTION prj_log_topic0_count ( SELECT log_topic0, count() GROUP BY log_topic0 ),
-    PROJECTION prj_log_address_count ( SELECT log_address, count() GROUP BY log_address ),
+    PROJECTION prj_log_address_count ( SELECT log_address, count(), min(block_num), max(block_num), min(timestamp), max(timestamp), min(minute), max(minute) GROUP BY log_address ),
 
     -- minute --
     PROJECTION prj_block_hash_by_timestamp ( SELECT block_hash, minute, timestamp, count() GROUP BY block_hash, minute,timestamp ),
