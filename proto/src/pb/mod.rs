@@ -1,5 +1,12 @@
 // @generated
 pub mod tron {
+    pub mod curvefi {
+        // @@protoc_insertion_point(attribute:tron.curvefi.v1)
+        pub mod v1 {
+            include!("tron.curvefi.v1.rs");
+            // @@protoc_insertion_point(tron.curvefi.v1)
+        }
+    }
     pub mod foundational_store {
         // @@protoc_insertion_point(attribute:tron.foundational_store.v1)
         pub mod v1 {
