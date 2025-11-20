@@ -8,7 +8,6 @@ members = [
   "sunswap",
   "justswap",
   "sunpump",
-  "curvefi",
   "clickhouse-tron-dex",
 
   # Common
