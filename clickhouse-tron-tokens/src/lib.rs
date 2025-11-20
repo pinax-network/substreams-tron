@@ -1,8 +1,8 @@
 mod logs;
 mod native_transfers;
 mod transactions;
-mod weth;
 mod trc20_transfers;
+mod weth;
 use substreams::pb::substreams::Clock;
 
 use proto::pb::tron as pb;
